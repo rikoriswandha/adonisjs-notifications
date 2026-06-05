@@ -19,7 +19,7 @@ export interface LogChannelLogger {
 export class LogChannel implements NotificationChannel<any, void> {
   name = 'log'
   resolvesOwnMessage = true
-
+  requiresRoute = false
   private cachedLogger: LogChannelLogger | null = null
 
   constructor(logger?: LogChannelLogger) {
@@ -44,15 +44,11 @@ export class LogChannel implements NotificationChannel<any, void> {
 
       // Redact PII from message payload
       const redactedMessage =
-        typeof rawMessage === 'string'
-          ? redactValue(rawMessage)
-          : redactValue(rawMessage)
+        typeof rawMessage === 'string' ? redactValue(rawMessage) : redactValue(rawMessage)
 
       // Redact PII from notifiable id (only if it's a string)
       const notifiableId =
-        typeof notifiable.id === 'string'
-          ? redactValue(notifiable.id)
-          : notifiable.id
+        typeof notifiable.id === 'string' ? redactValue(notifiable.id) : notifiable.id
 
       const logContext = {
         notification: className,

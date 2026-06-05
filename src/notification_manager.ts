@@ -128,13 +128,11 @@ export class NotificationManager {
     })
 
     try {
-      // Resolve route (validates route exists, throws if missing)
-      resolveRoute(
-        notification,
-        notifiable,
-        channelName,
-        this.config.routing
-      )
+      // Resolve route if channel requires it (skip if requiresRoute === false)
+      if (channel.requiresRoute !== false) {
+        const route = resolveRoute(notification, notifiable, channelName, this.config.routing)
+        notifiable.routes.set(channelName, route)
+      }
 
       // Resolve message (skip if channel resolves its own message)
       const message = channel.resolvesOwnMessage

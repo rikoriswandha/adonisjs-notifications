@@ -35,3 +35,9 @@ export const E_NOTIFICATION_CONFIG_INVALID = createError<[string]>(
   'E_NOTIFICATION_CONFIG_INVALID',
   500
 )
+
+export const E_NOTIFICATION_MAIL_MISSING = createError<[]>(
+  'The @adonisjs/mail package is required for the mail channel. Install it with: npm i @adonisjs/mail',
+  'E_NOTIFICATION_MAIL_MISSING',
+  500
+)

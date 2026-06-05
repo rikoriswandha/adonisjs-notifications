@@ -10,11 +10,11 @@ export const channels = {
    * Mail channel factory.
    * Requires @adonisjs/mail peer dependency.
    */
-  mail(): NotificationChannelFactory {
+  mail(options?: { mailService?: any }): NotificationChannelFactory {
     // Exception: Optional peer dependency - static import would require @adonisjs/mail
     return async () => {
       const { MailChannel } = await import('./mail_channel.ts')
-      return new MailChannel()
+      return new MailChannel(options)
     }
   },
 
