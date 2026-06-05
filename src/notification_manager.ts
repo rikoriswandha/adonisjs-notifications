@@ -1,7 +1,7 @@
 import type { NotificationConfig } from './contracts/config.ts'
 import type { DeliveryContext } from './contracts/delivery.ts'
 import type { NotificationChannel } from './contracts/channels.ts'
-import type { NormalizedNotifiable } from './contracts/notifiable.ts'
+import type { NormalizedNotifiable, NotificationPreferences } from './contracts/notifiable.ts'
 import type { NotificationEmitter, NotificationEventPayload } from './contracts/events.ts'
 import type {
   NotificationRepository,
@@ -17,6 +17,7 @@ import { resolveChannelMessage } from './utils/channel_resolver.ts'
 import { resolveRoute } from './utils/route_resolver.ts'
 import { generateDedupeKey } from './utils/dedupe_key.ts'
 import { serializeNotification, serializeNotifiable } from './utils/serialize.ts'
+import { resolvePreferences, filterChannels, checkQuietHours } from './utils/preference_filter.ts'
 import { E_NOTIFICATION_CHANNEL_MISSING, E_NOTIFICATION_QUEUE_MISSING } from './exceptions/main.ts'
 import {
   NOTIFICATION_SENDING,
@@ -74,6 +75,7 @@ export class NotificationManager {
   setQueueDispatcher(dispatcher: QueueDispatcher): void {
     this.queueDispatcher = dispatcher
   }
+
   /**
    * Set the notification repository (called by provider during boot).
    */
@@ -98,12 +100,27 @@ export class NotificationManager {
 
     for (const recipient of recipients) {
       const channels = notification.via(recipient.original)
+      const preferences = await resolvePreferences(
+        this.config.preferences,
+        recipient.original,
+        notification
+      )
+      const { allowed, skipped } = filterChannels(channels, preferences, notification)
 
-      for (const channelName of channels) {
+      for (const skip of skipped) {
+        this.emitEvent(NOTIFICATION_SKIPPED, {
+          notification,
+          notifiable: recipient,
+          channel: skip.channel,
+          metadata: { reason: skip.reason },
+        })
+      }
+
+      for (const channelName of allowed) {
         if (this.shouldQueueNotification(notification)) {
-          await this.dispatchToQueue(recipient, notification, channelName)
+          await this.dispatchToQueue(recipient, notification, channelName, preferences)
         } else {
-          await this.deliver(recipient, notification, channelName)
+          await this.deliver(recipient, notification, channelName, preferences)
         }
       }
     }
@@ -117,9 +134,24 @@ export class NotificationManager {
 
     for (const recipient of recipients) {
       const channels = notification.via(recipient.original)
+      const preferences = await resolvePreferences(
+        this.config.preferences,
+        recipient.original,
+        notification
+      )
+      const { allowed, skipped } = filterChannels(channels, preferences, notification)
 
-      for (const channelName of channels) {
-        await this.deliver(recipient, notification, channelName)
+      for (const skip of skipped) {
+        this.emitEvent(NOTIFICATION_SKIPPED, {
+          notification,
+          notifiable: recipient,
+          channel: skip.channel,
+          metadata: { reason: skip.reason },
+        })
+      }
+
+      for (const channelName of allowed) {
+        await this.deliver(recipient, notification, channelName, preferences)
       }
     }
   }
@@ -186,10 +218,29 @@ export class NotificationManager {
   private async dispatchToQueue(
     notifiable: NormalizedNotifiable,
     notification: Notification,
-    channelName: string
+    channelName: string,
+    preferences?: NotificationPreferences | null
   ): Promise<void> {
     if (!this.queueDispatcher) {
       throw new E_NOTIFICATION_QUEUE_MISSING([])
+    }
+
+    // Quiet-hours check before queuing
+    if (preferences) {
+      const quietCheck = checkQuietHours(
+        preferences,
+        this.config.preferences.quietHours,
+        notification
+      )
+      if (quietCheck.blocked) {
+        this.emitEvent(NOTIFICATION_SKIPPED, {
+          notification,
+          notifiable,
+          channel: channelName,
+          metadata: { reason: quietCheck.reason },
+        })
+        return
+      }
     }
 
     const notificationType = notification.constructor.name
@@ -238,7 +289,8 @@ export class NotificationManager {
   private async deliver(
     notifiable: NormalizedNotifiable,
     notification: Notification,
-    channelName: string
+    channelName: string,
+    preferences?: NotificationPreferences | null
   ): Promise<void> {
     // Check shouldSend gate
     if (notification.shouldSend && !notification.shouldSend(notifiable.original, channelName)) {
@@ -250,6 +302,25 @@ export class NotificationManager {
       })
       return
     }
+
+    // Quiet-hours check (only when preferences are provided — direct send path)
+    if (preferences) {
+      const quietCheck = checkQuietHours(
+        preferences,
+        this.config.preferences.quietHours,
+        notification
+      )
+      if (quietCheck.blocked) {
+        this.emitEvent(NOTIFICATION_SKIPPED, {
+          notification,
+          notifiable,
+          channel: channelName,
+          metadata: { reason: quietCheck.reason },
+        })
+        return
+      }
+    }
+
     // Resolve channel
     const channel = await this.resolveChannel(channelName)
     // Build dedupe key
@@ -384,6 +455,7 @@ export class NotificationManager {
     // Always throw after retry exhaustion to preserve error propagation
     throw lastError
   }
+
   /**
    * Retry failed deliveries that are eligible for re-attempt.
    */
@@ -418,12 +490,16 @@ export class NotificationManager {
     }
     return result
   }
+
   /**
    * Sleep for the given number of milliseconds.
    */
   private sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms))
+    const { promise, resolve } = Promise.withResolvers<void>()
+    setTimeout(resolve, ms)
+    return promise
   }
+
   /**
    * Build the delivery context passed to channel.send().
    */
