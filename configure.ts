@@ -13,5 +13,16 @@
 */
 
 import type Configure from '@adonisjs/core/commands/configure'
+import { stubsRoot } from './stubs/main.ts'
 
-export async function configure(_command: Configure) {}
+export async function configure(command: Configure) {
+  const codemods = await command.createCodemods()
+
+  // Publish config/notifications.ts from stub
+  await codemods.makeUsingStub(stubsRoot, 'config/notifications.stub', {})
+
+  // Register provider in adonisrc.ts
+  await codemods.updateRcFile((rcFile) => {
+    rcFile.addProvider('adonisjs-notifications/notification_provider')
+  })
+}
