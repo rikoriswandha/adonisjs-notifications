@@ -26,6 +26,8 @@ import {
   NOTIFICATION_SKIPPED,
   NOTIFICATION_QUEUED,
 } from './contracts/events.ts'
+import type { FakeOptions } from './contracts/testing.ts'
+import { FakeNotificationManager } from './testing/fake_notification_manager.ts'
 
 /**
  * Minimal interface for dispatching a notification job to a queue.
@@ -56,6 +58,7 @@ export class NotificationManager {
   private channels: Map<string, NotificationChannel> = new Map()
   private queueDispatcher?: QueueDispatcher
   private repository?: NotificationRepository
+  #fakeManager?: FakeNotificationManager
 
   constructor(
     protected config: NotificationConfig,
@@ -96,6 +99,10 @@ export class NotificationManager {
    * and queue is enabled and available.
    */
   async send(notifiable: unknown | unknown[], notification: Notification): Promise<void> {
+    if (this.#fakeManager) {
+      return this.#fakeManager.send(notifiable, notification)
+    }
+
     const recipients = normalizeRecipients(notifiable)
 
     for (const recipient of recipients) {
@@ -130,8 +137,11 @@ export class NotificationManager {
    * Send a notification immediately, bypassing the queue unconditionally.
    */
   async sendNow(notifiable: unknown | unknown[], notification: Notification): Promise<void> {
-    const recipients = normalizeRecipients(notifiable)
+    if (this.#fakeManager) {
+      return this.#fakeManager.sendNow(notifiable, notification)
+    }
 
+    const recipients = normalizeRecipients(notifiable)
     for (const recipient of recipients) {
       const channels = notification.via(recipient.original)
       const preferences = await resolvePreferences(
@@ -154,6 +164,19 @@ export class NotificationManager {
         await this.deliver(recipient, notification, channelName, preferences)
       }
     }
+  }
+
+  /**
+   * Deliver a single channel for a single notifiable.
+   * Used by FakeNotificationManager to delegate non-faked channels.
+   */
+  async deliverChannel(
+    notifiable: unknown,
+    notification: Notification,
+    channelName: string
+  ): Promise<void> {
+    const normalized = normalizeRecipients(notifiable)[0]!
+    await this.deliver(normalized, notification, channelName, null)
   }
 
   /**
@@ -182,17 +205,23 @@ export class NotificationManager {
   }
 
   /**
-   * Placeholder for Phase 12 testing utilities.
+   * Intercept all or selected channels with a fake for testing.
+   * Returns the fake manager for assertions.
    */
-  fake(): void {
-    throw new Error('NotificationManager.fake() is not yet implemented.')
+  fake(options?: FakeOptions): FakeNotificationManager {
+    this.restore()
+    this.#fakeManager = new FakeNotificationManager(this, options)
+    return this.#fakeManager
   }
 
   /**
-   * Placeholder for Phase 12 testing utilities.
+   * Restore real notification delivery.
    */
   restore(): void {
-    throw new Error('NotificationManager.restore() is not yet implemented.')
+    if (this.#fakeManager) {
+      this.#fakeManager.restore()
+      this.#fakeManager = undefined
+    }
   }
 
   /**

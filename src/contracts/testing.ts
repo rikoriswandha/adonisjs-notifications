@@ -3,17 +3,27 @@ import type { NormalizedNotifiable } from './notifiable.ts'
 
 export type NotificationChannelName = string
 
+export interface FakeOptions {
+  channels?: string[]
+}
+
 export interface RecordedNotification {
   notification: Notification
   notifiable: NormalizedNotifiable
   channels: string[]
   queued: boolean
+  getMessage(channel?: string): unknown
 }
 
 export interface NotificationFakeAssertions {
+  assertSent(
+    notificationClass: new (...args: unknown[]) => Notification,
+    filterFn?: (n: RecordedNotification) => boolean
+  ): void
   assertSentTo(
     notifiable: unknown,
-    notificationClass: new (...args: unknown[]) => Notification
+    notificationClass: new (...args: unknown[]) => Notification,
+    filterFn?: (n: RecordedNotification) => boolean
   ): void
   assertNotSentTo(
     notifiable: unknown,
@@ -29,4 +39,20 @@ export interface NotificationFakeAssertions {
     notifiable: unknown,
     notificationClass: new (...args: unknown[]) => Notification
   ): void
+  assertNoneQueued(): void
+  assertSentCount(count: number): void
+  assertSentCount(
+    notificationClass: new (...args: unknown[]) => Notification,
+    count: number
+  ): void
+  assertQueuedCount(count: number): void
+  assertQueuedCount(
+    notificationClass: new (...args: unknown[]) => Notification,
+    count: number
+  ): void
+}
+
+export interface FakeNotificationRouter {
+  route(channel: string, address: unknown): this
+  notify(notification: Notification): Promise<void>
 }
