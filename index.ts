@@ -23,3 +23,4 @@ export {
   NOTIFICATION_FAILED,
   NOTIFICATION_SKIPPED,
 } from './src/contracts/events.ts'
+export { Notifies } from './src/mixins/notifies.ts'

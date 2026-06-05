@@ -103,7 +103,8 @@
       "./services/main.ts",
       "./providers/notification_provider.ts",
       "./src/types.ts",
-      "./src/channels/index.ts"
+      "./src/channels/index.ts",
+      "./src/mixins/main.ts"
     ],
     "outDir": "./build",
     "clean": true,
