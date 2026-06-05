@@ -11,7 +11,6 @@
     "!build/bin",
     "!build/tests"
   ],
-  "main": "build/index.js",
   "exports": {
     ".": "./build/index.js",
     "./types": "./build/src/types.js",
@@ -21,7 +20,8 @@
     "./commands/*": "./build/commands/*.js",
     "./mixins": "./build/src/mixins/main.js",
     "./testing": "./build/src/testing/main.js",
-    "./channels/*": "./build/src/channels/*.js"
+    "./channels/*": "./build/src/channels/*.js",
+    "./jobs/*": "./build/src/jobs/*.js"
   },
   "scripts": {
     "copy:templates": "copyfiles \"stubs/**/*.stub\" build",
@@ -79,7 +79,8 @@
     "@adonisjs/assembler": "^8.0.0",
     "@adonisjs/core": "^7.0.0",
     "@adonisjs/lucid": "^22.0.0",
-    "@adonisjs/mail": "^4.0.0"
+    "@adonisjs/mail": "^4.0.0",
+    "@adonisjs/queue": "^1.0.0"
   },
   "peerDependenciesMeta": {
     "@adonisjs/assembler": {
@@ -89,6 +90,9 @@
       "optional": true
     },
     "@adonisjs/lucid": {
+      "optional": true
+    },
+    "@adonisjs/queue": {
       "optional": true
     }
   },
@@ -104,7 +108,8 @@
       "./providers/notification_provider.ts",
       "./src/types.ts",
       "./src/channels/index.ts",
-      "./src/mixins/main.ts"
+      "./src/mixins/main.ts",
+      "./src/jobs/send_notification_job.ts"
     ],
     "outDir": "./build",
     "clean": true,

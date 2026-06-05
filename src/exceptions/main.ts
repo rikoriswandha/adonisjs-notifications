@@ -47,3 +47,9 @@ export const E_NOTIFICATION_LUCID_MISSING = createError<[]>(
   'E_NOTIFICATION_LUCID_MISSING',
   500
 )
+
+export const E_NOTIFICATION_QUEUE_MISSING = createError<[]>(
+  'The @adonisjs/queue package is required for queued notifications. Install it with: npm i @adonisjs/queue',
+  'E_NOTIFICATION_QUEUE_MISSING',
+  500
+)

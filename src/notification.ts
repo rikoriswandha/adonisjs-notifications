@@ -1,4 +1,6 @@
 export abstract class Notification {
+  public instanceId: string
+
   /**
    * Override to declare queue behavior.
    */
@@ -7,6 +9,10 @@ export abstract class Notification {
   declare connection: string | undefined
   declare category: string | undefined
   declare priority: string | undefined
+
+  constructor() {
+    this.instanceId = crypto.randomUUID()
+  }
 
   /**
    * Return the list of channel names to send through.
@@ -29,4 +35,15 @@ export abstract class Notification {
    * Checked before notifiable.routeNotificationFor.
    */
   routeNotificationFor?(channel: string, notifiable: unknown): unknown
+
+  /**
+   * Optional override for queue serialization.
+   * Return a plain object that can be JSON-serialized.
+   */
+  serialize?(): Record<string, unknown>
+
+  /**
+   * Optional static factory for queue deserialization.
+   */
+  static deserialize?(data: Record<string, unknown>): any
 }

@@ -46,19 +46,42 @@ export default class NotificationProvider {
           ;(emitter as any).emit(event, payload)
         },
       }
-
       manager.setEmitter(adapter)
     } catch (error) {
       // Emitter is optional - if not available, manager will work without events
     }
+    // Attempt to wire queue support if @adonisjs/queue is installed
+    try {
+      const { SendNotificationJob } = await import('../src/jobs/send_notification_job.ts')
+      const { setContainer } = await import('../src/jobs/send_notification_job.ts')
+      setContainer(this.app.container)
+      const config = this.app.config.get<NotificationConfig>('notifications')
+      manager.setQueueDispatcher({
+        async dispatch(payload: any) {
+          const builder = SendNotificationJob.dispatch(payload)
 
+          if (payload.queue) {
+            builder.toQueue(payload.queue)
+          } else {
+            builder.toQueue(config.queue.defaultQueue)
+          }
+          if (payload.connection) {
+            builder.with(payload.connection)
+          }
+          if (payload.delay) {
+            builder.in(payload.delay)
+          }
+          await builder
+        },
+      })
+    } catch {
+      // @adonisjs/queue not installed — queue features unavailable
+    }
     // Attempt to register NotificationRepository if Lucid is available
     try {
       await import('@adonisjs/lucid')
-
       const { LucidNotificationRepository } =
         await import('../src/repositories/lucid_notification_repository.ts')
-
       this.app.container.singleton('notification.repository', () => {
         return new LucidNotificationRepository()
       })

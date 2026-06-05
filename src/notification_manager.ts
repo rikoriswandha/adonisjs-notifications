@@ -8,19 +8,45 @@ import { NotificationRouter } from './notification_router.ts'
 import { normalizeRecipients } from './utils/notifiable_resolver.ts'
 import { resolveChannelMessage } from './utils/channel_resolver.ts'
 import { resolveRoute } from './utils/route_resolver.ts'
-import { E_NOTIFICATION_CHANNEL_MISSING } from './exceptions/main.ts'
+import { generateDedupeKey } from './utils/dedupe_key.ts'
+import { serializeNotification, serializeNotifiable } from './utils/serialize.ts'
+import { E_NOTIFICATION_CHANNEL_MISSING, E_NOTIFICATION_QUEUE_MISSING } from './exceptions/main.ts'
 import {
   NOTIFICATION_SENDING,
   NOTIFICATION_SENT,
   NOTIFICATION_FAILED,
   NOTIFICATION_SKIPPED,
+  NOTIFICATION_QUEUED,
 } from './contracts/events.ts'
+
+/**
+ * Minimal interface for dispatching a notification job to a queue.
+ */
+export interface QueueDispatcher {
+  dispatch(payload: QueuePayload): Promise<void>
+}
+
+/**
+ * Payload passed to the queue dispatcher for each channel delivery.
+ */
+export interface QueuePayload {
+  notificationType: string
+  notificationData: Record<string, unknown>
+  notifiableType: string
+  notifiableId: string | number
+  channel: string
+  dedupeKey: string
+  queue?: string
+  connection?: string
+  delay?: number
+}
 
 /**
  * Core notification manager that orchestrates delivery across channels.
  */
 export class NotificationManager {
   private channels: Map<string, NotificationChannel> = new Map()
+  private queueDispatcher?: QueueDispatcher
 
   constructor(
     protected config: NotificationConfig,
@@ -35,10 +61,44 @@ export class NotificationManager {
   }
 
   /**
+   * Set the queue dispatcher (called by provider during boot).
+   */
+  setQueueDispatcher(dispatcher: QueueDispatcher): void {
+    this.queueDispatcher = dispatcher
+  }
+
+  /**
+   * Expose config for queue job deserialization.
+   */
+  getConfig(): NotificationConfig {
+    return this.config
+  }
+
+  /**
    * Send a notification to one or more notifiables.
-   * Currently synchronous; will support queue dispatch in Phase 9.
+   * Dispatches to queue when the notification declares `shouldQueue = true`
+   * and queue is enabled and available.
    */
   async send(notifiable: unknown | unknown[], notification: Notification): Promise<void> {
+    const recipients = normalizeRecipients(notifiable)
+
+    for (const recipient of recipients) {
+      const channels = notification.via(recipient.original)
+
+      for (const channelName of channels) {
+        if (this.shouldQueueNotification(notification)) {
+          await this.dispatchToQueue(recipient, notification, channelName)
+        } else {
+          await this.deliver(recipient, notification, channelName)
+        }
+      }
+    }
+  }
+
+  /**
+   * Send a notification immediately, bypassing the queue unconditionally.
+   */
+  async sendNow(notifiable: unknown | unknown[], notification: Notification): Promise<void> {
     const recipients = normalizeRecipients(notifiable)
 
     for (const recipient of recipients) {
@@ -48,14 +108,6 @@ export class NotificationManager {
         await this.deliver(recipient, notification, channelName)
       }
     }
-  }
-
-  /**
-   * Send a notification immediately (bypass queue).
-   * Currently identical to send(); queue integration added in Phase 9.
-   */
-  async sendNow(notifiable: unknown | unknown[], notification: Notification): Promise<void> {
-    await this.send(notifiable, notification)
   }
 
   /**
@@ -95,6 +147,75 @@ export class NotificationManager {
    */
   restore(): void {
     throw new Error('NotificationManager.restore() is not yet implemented.')
+  }
+
+  /**
+   * Determine whether a notification should be queued.
+   */
+  private shouldQueueNotification(notification: Notification): boolean {
+    // Config master switch is off
+    if (!this.config.queue.enabled) {
+      return false
+    }
+    // Explicit opt-out
+    if (notification.shouldQueue === false) {
+      return false
+    }
+    // Queue if explicitly opted in, or default behavior (not explicitly opted out)
+    // AND a dispatcher is available
+    return this.queueDispatcher !== undefined
+  }
+
+  /**
+   * Dispatch a single notification channel delivery to the queue.
+   */
+  private async dispatchToQueue(
+    notifiable: NormalizedNotifiable,
+    notification: Notification,
+    channelName: string
+  ): Promise<void> {
+    if (!this.queueDispatcher) {
+      throw new E_NOTIFICATION_QUEUE_MISSING([])
+    }
+
+    const notificationType = notification.constructor.name
+    const notificationData = serializeNotification(notification)
+    const serializedNotifiable = serializeNotifiable(notifiable)
+
+    const dedupeKey = generateDedupeKey(
+      notificationType,
+      notification.instanceId,
+      serializedNotifiable.type,
+      serializedNotifiable.id,
+      channelName
+    )
+
+    const delayValue = notification.delay
+      ? notification.delay(notifiable.original, channelName)
+      : null
+    const delayMs =
+      typeof delayValue === 'string' ? parseDelay(delayValue) : (delayValue ?? undefined)
+
+    const payload: QueuePayload = {
+      notificationType,
+      notificationData,
+      notifiableType: serializedNotifiable.type,
+      notifiableId: serializedNotifiable.id,
+      channel: channelName,
+      dedupeKey,
+      queue: notification.queue,
+      connection: notification.connection,
+      delay: delayMs,
+    }
+
+    this.emitEvent(NOTIFICATION_QUEUED, {
+      notification,
+      notifiable,
+      channel: channelName,
+      metadata: { dedupeKey, queue: payload.queue ?? this.config.queue.defaultQueue },
+    })
+
+    await this.queueDispatcher.dispatch(payload)
   }
 
   /**
@@ -193,4 +314,24 @@ export class NotificationManager {
       this.emitter.emit(event, payload)
     }
   }
+}
+
+/**
+ * Parse a human-readable delay string into milliseconds.
+ */
+function parseDelay(value: string): number {
+  const match = value.match(/^(\d+)\s*(ms|s|m|h|d)$/)
+  if (!match) {
+    throw new Error(`Invalid delay format: ${value}`)
+  }
+  const num = Number.parseInt(match[1], 10)
+  const unit = match[2]
+  const multipliers: Record<string, number> = {
+    ms: 1,
+    s: 1000,
+    m: 60 * 1000,
+    h: 60 * 60 * 1000,
+    d: 24 * 60 * 60 * 1000,
+  }
+  return num * multipliers[unit]
 }

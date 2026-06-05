@@ -9,6 +9,7 @@ export const NOTIFICATION_SENDING = 'notification:sending'
 export const NOTIFICATION_SENT = 'notification:sent'
 export const NOTIFICATION_FAILED = 'notification:failed'
 export const NOTIFICATION_SKIPPED = 'notification:skipped'
+export const NOTIFICATION_QUEUED = 'notification:queued'
 
 /**
  * Payload attached to every notification lifecycle event.

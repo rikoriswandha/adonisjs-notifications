@@ -290,11 +290,9 @@ test.group('NotificationManager - Event Emission', () => {
 })
 
 test.group('NotificationManager - sendNow', () => {
-  test('behaves identically to send', async ({ assert }) => {
+  test('delivers immediately bypassing queue', async ({ assert }) => {
     const mockChannel = new MockChannel()
-    const config = createConfig({
-      mail: () => mockChannel,
-    })
+    const config = createConfig({ mail: () => mockChannel })
     const manager = new NotificationManager(config)
     const notification = new TestNotification()
     const notifiable = { id: 1, email: 'user@example.com' }
