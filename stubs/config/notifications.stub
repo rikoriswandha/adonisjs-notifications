@@ -1,0 +1,56 @@
+{{{
+  exports({ to: app.configPath('notifications.ts') })
+}}}
+import { defineConfig, channels } from 'adonisjs-notifications'
+
+export default defineConfig({
+  /**
+   * Notification delivery channels.
+   * Remove channels you don't need.
+   */
+  channels: {
+    mail: channels.mail(),
+    database: channels.database(),
+    log: channels.log(),
+    null: channels.null(),
+  },
+
+  /**
+   * Queue configuration for async notification delivery.
+   * Requires @adonisjs/queue when enabled.
+   */
+  queue: {
+    enabled: false,
+    defaultQueue: 'notifications',
+  },
+
+  /**
+   * Route resolution field mapping.
+   * Maps channel names to notifiable model field names.
+   */
+  routing: {
+    mail: ['email'],
+  },
+
+  /**
+   * Database configuration for notification inbox and delivery tracking.
+   * Requires @adonisjs/lucid when using database channel.
+   */
+  database: {
+    table: 'notifications',
+    deliveriesTable: 'notification_deliveries',
+    idStrategy: 'uuid',
+  },
+
+  /**
+   * Delivery attempt configuration.
+   */
+  delivery: {
+    recordAttempts: true,
+    failFast: false,
+    retry: {
+      attempts: 3,
+      backoff: [30, 300, 900],
+    },
+  },
+})
