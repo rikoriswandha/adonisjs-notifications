@@ -44,7 +44,7 @@ test.group('NullChannel', () => {
 
     // Verify it's a valid ISO timestamp
     const parsed = new Date(result.metadata!.processedAt as string)
-    assert.isFalse(isNaN(parsed.getTime()))
+    assert.isFalse(Number.isNaN(parsed.getTime()))
   })
 
   test('does not throw regardless of input', async ({ assert }) => {

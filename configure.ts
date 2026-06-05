@@ -21,6 +21,31 @@ export async function configure(command: Configure) {
   // Publish config/notifications.ts from stub
   await codemods.makeUsingStub(stubsRoot, 'config/notifications.stub', {})
 
+  // Check if @adonisjs/lucid is installed for database migrations
+  let lucidInstalled = false
+  try {
+    await import('@adonisjs/lucid')
+    lucidInstalled = true
+  } catch {
+    // Lucid not installed - skip migration publishing
+  }
+
+  if (lucidInstalled) {
+    // Publish notifications table migration
+    await codemods.makeUsingStub(stubsRoot, 'migrations/create_notifications_table.stub', {
+      tableName: 'notifications',
+    })
+
+    // Publish notification_deliveries table migration
+    await codemods.makeUsingStub(
+      stubsRoot,
+      'migrations/create_notification_deliveries_table.stub',
+      {
+        tableName: 'notification_deliveries',
+      }
+    )
+  }
+
   // Register provider in adonisrc.ts
   await codemods.updateRcFile((rcFile) => {
     rcFile.addProvider('adonisjs-notifications/notification_provider')

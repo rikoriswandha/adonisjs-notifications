@@ -154,11 +154,11 @@ export class CustomRouteNotification extends Notification {
 export type AssertNotification<T extends Notification> = T
 
 // Verify all notification types extend Notification
-export type _TestNotification = AssertNotification<TestNotification>
-export type _MinimalNotification = AssertNotification<MinimalNotification>
-export type _QueuedNotification = AssertNotification<QueuedNotification>
-export type _PriorityNotification = AssertNotification<PriorityNotification>
-export type _CustomRouteNotification = AssertNotification<CustomRouteNotification>
+export type AssertTestNotification = AssertNotification<TestNotification>
+export type AssertMinimalNotification = AssertNotification<MinimalNotification>
+export type AssertQueuedNotification = AssertNotification<QueuedNotification>
+export type AssertPriorityNotification = AssertNotification<PriorityNotification>
+export type AssertCustomRouteNotification = AssertNotification<CustomRouteNotification>
 
 // Verify method signatures exist
 export type HasVia = typeof TestNotification.prototype.via

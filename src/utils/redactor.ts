@@ -53,9 +53,7 @@ export function redactValue(value: unknown): string {
  * Redact PII from all string values in an object.
  * Returns a new object with redacted values.
  */
-export function redactObject(
-  obj: Record<string, unknown>
-): Record<string, unknown> {
+export function redactObject(obj: Record<string, unknown>): Record<string, unknown> {
   const result: Record<string, unknown> = {}
 
   for (const [key, value] of Object.entries(obj)) {

@@ -7,8 +7,10 @@ import type { DeliveryContext } from '../../src/contracts/delivery.ts'
  * Mock logger that captures calls for assertions.
  */
 class MockLogger {
-  public infoCalls: Array<{ context: Record<string, unknown>; message: string; args: unknown[] }> = []
-  public errorCalls: Array<{ context: Record<string, unknown>; message: string; args: unknown[] }> = []
+  public infoCalls: Array<{ context: Record<string, unknown>; message: string; args: unknown[] }> =
+    []
+  public errorCalls: Array<{ context: Record<string, unknown>; message: string; args: unknown[] }> =
+    []
   public shouldThrow = false
 
   info(context: Record<string, unknown>, message: string, ...args: unknown[]): void {
@@ -73,7 +75,9 @@ test.group('LogChannel', () => {
     assert.isTrue(channel.resolvesOwnMessage)
   })
 
-  test('calls logger with structured context containing notification name, channel, notifiable type/id', async ({ assert }) => {
+  test('calls logger with structured context containing notification name, channel, notifiable type/id', async ({
+    assert,
+  }) => {
     const logger = new MockLogger()
     const channel = new LogChannel(logger)
     const context = buildContext()
@@ -82,7 +86,7 @@ test.group('LogChannel', () => {
 
     assert.lengthOf(logger.infoCalls, 1)
     const call = logger.infoCalls[0]
-    
+
     assert.equal(call.context.notification, 'TestNotificationWithLog')
     assert.equal(call.context.channel, 'log')
     assert.equal(call.context.notifiableType, 'user')
@@ -105,7 +109,7 @@ test.group('LogChannel', () => {
 
     // Verify it's a valid ISO timestamp
     const parsed = new Date(result.metadata!.loggedAt as string)
-    assert.isFalse(isNaN(parsed.getTime()))
+    assert.isFalse(Number.isNaN(parsed.getTime()))
   })
 
   test('uses toLog() message when notification implements it', async ({ assert }) => {
@@ -117,7 +121,7 @@ test.group('LogChannel', () => {
 
     const call = logger.infoCalls[0]
     const message = call.context.message as string
-    
+
     // The message should be the redacted version of { greeting: 'Hello John', email: 'user@example.com' }
     // Email should be redacted
     assert.include(message, '[REDACTED_EMAIL]')
@@ -135,7 +139,7 @@ test.group('LogChannel', () => {
 
     const call = logger.infoCalls[0]
     const message = call.context.message as string
-    
+
     // Default format includes notification name and sentAt
     assert.include(message, 'TestNotificationWithoutLog')
     assert.include(message, 'sentAt')
@@ -160,7 +164,7 @@ test.group('LogChannel', () => {
 
     const call = logger.infoCalls[0]
     const message = call.context.message as string
-    
+
     assert.include(message, '[REDACTED_EMAIL]')
     assert.notInclude(message, 'admin@secret.com')
   })

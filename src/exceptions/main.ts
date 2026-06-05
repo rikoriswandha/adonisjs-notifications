@@ -41,3 +41,9 @@ export const E_NOTIFICATION_MAIL_MISSING = createError<[]>(
   'E_NOTIFICATION_MAIL_MISSING',
   500
 )
+
+export const E_NOTIFICATION_LUCID_MISSING = createError<[]>(
+  'The @adonisjs/lucid package is required for the database channel. Install it with: npm i @adonisjs/lucid',
+  'E_NOTIFICATION_LUCID_MISSING',
+  500
+)

@@ -16,6 +16,7 @@ export { NotificationRouter } from './src/notification_router.ts'
 export { defineConfig, resolveConfig } from './src/define_config.ts'
 export { channels } from './src/channels/index.ts'
 export { MailMessage } from './src/messages/mail_message.ts'
+export { MemoryNotificationRepository } from './src/repositories/memory_notification_repository.ts'
 export {
   NOTIFICATION_SENDING,
   NOTIFICATION_SENT,

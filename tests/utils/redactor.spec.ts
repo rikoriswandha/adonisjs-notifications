@@ -33,7 +33,8 @@ test.group('redactValue', () => {
   })
 
   test('masks JWT tokens', ({ assert }) => {
-    const jwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U'
+    const jwt =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U'
     const input = `Bearer ${jwt}`
     const result = redactValue(input)
     assert.include(result, '[REDACTED_JWT]')
@@ -76,7 +77,8 @@ test.group('redactValue', () => {
   })
 
   test('redacts multiple PII types in one string', ({ assert }) => {
-    const input = 'Email: admin@test.com, Phone: +1-555-123-4567, JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U'
+    const input =
+      'Email: admin@test.com, Phone: +1-555-123-4567, JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U'
     const result = redactValue(input)
     assert.include(result, '[REDACTED_EMAIL]')
     assert.include(result, '[REDACTED_PHONE]')

@@ -22,11 +22,20 @@ export const channels = {
    * Database channel factory.
    * Requires @adonisjs/lucid peer dependency.
    */
-  database(): NotificationChannelFactory {
+  database(options?: { repository?: any }): NotificationChannelFactory {
     // Exception: Optional peer dependency - static import would require @adonisjs/lucid
     return async () => {
+      let repository = options?.repository
+
+      // If no repository provided, create Lucid-backed repository
+      if (!repository) {
+        const { LucidNotificationRepository } =
+          await import('../repositories/lucid_notification_repository.ts')
+        repository = new LucidNotificationRepository()
+      }
+
       const { DatabaseChannel } = await import('./database_channel.ts')
-      return new DatabaseChannel()
+      return new DatabaseChannel(repository)
     }
   },
 

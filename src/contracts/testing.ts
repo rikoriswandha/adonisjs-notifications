@@ -11,13 +11,22 @@ export interface RecordedNotification {
 }
 
 export interface NotificationFakeAssertions {
-  assertSentTo(notifiable: unknown, notificationClass: new (...args: unknown[]) => Notification): void
-  assertNotSentTo(notifiable: unknown, notificationClass: new (...args: unknown[]) => Notification): void
+  assertSentTo(
+    notifiable: unknown,
+    notificationClass: new (...args: unknown[]) => Notification
+  ): void
+  assertNotSentTo(
+    notifiable: unknown,
+    notificationClass: new (...args: unknown[]) => Notification
+  ): void
   assertSentOnChannel(
     notifiable: unknown,
     notificationClass: new (...args: unknown[]) => Notification,
     channel: string
   ): void
   assertNothingSent(): void
-  assertQueued(notifiable: unknown, notificationClass: new (...args: unknown[]) => Notification): void
+  assertQueued(
+    notifiable: unknown,
+    notificationClass: new (...args: unknown[]) => Notification
+  ): void
 }

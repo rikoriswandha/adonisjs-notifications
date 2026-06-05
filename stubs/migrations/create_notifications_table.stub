@@ -1,0 +1,33 @@
+{{{
+  exports({
+    to: app.migrationsPath('create_notifications_table')
+  })
+}}}
+import { BaseSchema } from '@adonisjs/lucid/schema'
+
+export default class extends BaseSchema {
+  protected tableName = '{{ tableName }}'
+
+  async up() {
+    this.schema.createTable(this.tableName, (table) => {
+      table.uuid('id').primary()
+      table.string('type').notNullable()
+      table.string('notifiable_type').notNullable()
+      table.string('notifiable_id').notNullable()
+      table.json('data').notNullable()
+      table.json('metadata').nullable()
+      table.timestamp('read_at').nullable()
+      table.timestamp('seen_at').nullable()
+      table.timestamp('created_at').notNullable()
+      table.timestamp('updated_at').nullable()
+
+      table.index(['notifiable_type', 'notifiable_id', 'read_at'])
+      table.index(['notifiable_type', 'notifiable_id', 'created_at'])
+      table.index('type')
+    })
+  }
+
+  async down() {
+    this.schema.dropTable(this.tableName)
+  }
+}

@@ -1,0 +1,39 @@
+{{{
+  exports({
+    to: app.migrationsPath('create_notification_deliveries_table')
+  })
+}}}
+import { BaseSchema } from '@adonisjs/lucid/schema'
+
+export default class extends BaseSchema {
+  protected tableName = '{{ tableName }}'
+
+  async up() {
+    this.schema.createTable(this.tableName, (table) => {
+      table.uuid('id').primary()
+      table.uuid('notification_id').nullable()
+      table.string('notification_type').notNullable()
+      table.string('notifiable_type').notNullable()
+      table.string('notifiable_id').notNullable()
+      table.string('channel').notNullable()
+      table.string('status').notNullable().defaultTo('pending')
+      table.integer('attempts').notNullable().defaultTo(0)
+      table.string('dedupe_key').notNullable().unique()
+      table.string('provider_message_id').nullable()
+      table.json('error').nullable()
+      table.timestamp('available_at').nullable()
+      table.timestamp('sent_at').nullable()
+      table.timestamp('failed_at').nullable()
+      table.timestamp('created_at').notNullable()
+      table.timestamp('updated_at').nullable()
+
+      table.index(['status', 'available_at'])
+      table.index(['notifiable_type', 'notifiable_id', 'channel'])
+      table.index(['notification_type', 'channel'])
+    })
+  }
+
+  async down() {
+    this.schema.dropTable(this.tableName)
+  }
+}

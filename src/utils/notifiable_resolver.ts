@@ -44,9 +44,7 @@ export function normalizeRecipient(notifiable: unknown): NormalizedNotifiable {
 /**
  * Normalize one or many recipients into an array.
  */
-export function normalizeRecipients(
-  notifiable: unknown | unknown[]
-): NormalizedNotifiable[] {
+export function normalizeRecipients(notifiable: unknown | unknown[]): NormalizedNotifiable[] {
   if (Array.isArray(notifiable)) {
     return notifiable.map(normalizeRecipient)
   }

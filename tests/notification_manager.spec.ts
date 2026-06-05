@@ -82,13 +82,23 @@ class ConditionalNotification extends Notification {
 }
 
 // Helper to create minimal config
-function createConfig(channels: Record<string, () => NotificationChannel | Promise<NotificationChannel>>): NotificationConfig {
+function createConfig(
+  channels: Record<string, () => NotificationChannel | Promise<NotificationChannel>>
+): NotificationConfig {
   return {
     channels,
     queue: { enabled: false, defaultQueue: 'notifications' },
     routing: { mail: ['email'], database: ['id'] },
-    database: { table: 'notifications', deliveriesTable: 'notification_deliveries', idStrategy: 'uuid' },
-    delivery: { recordAttempts: true, failFast: false, retry: { attempts: 3, backoff: [30, 300, 900] } },
+    database: {
+      table: 'notifications',
+      deliveriesTable: 'notification_deliveries',
+      idStrategy: 'uuid',
+    },
+    delivery: {
+      recordAttempts: true,
+      failFast: false,
+      retry: { attempts: 3, backoff: [30, 300, 900] },
+    },
     serialization: { notificationAliases: {}, notifiableAliases: {} },
     preferences: { quietHours: { enabled: false, bypassPriorities: [] } },
   }
@@ -314,9 +324,7 @@ test.group('NotificationManager - route', () => {
     })
     const manager = new NotificationManager(config)
 
-    const router = manager
-      .route('mail', 'test@example.com')
-      .route('database', 'db-route')
+    const router = manager.route('mail', 'test@example.com').route('database', 'db-route')
 
     assert.instanceOf(router, NotificationRouter)
   })
@@ -359,9 +367,7 @@ test.group('NotificationRouter', () => {
     }
 
     const notification = new RouterTestNotification()
-    const router = manager
-      .route('mail', 'router@example.com')
-      .route('database', 'db-route')
+    const router = manager.route('mail', 'router@example.com').route('database', 'db-route')
 
     await router.notify(notification)
 

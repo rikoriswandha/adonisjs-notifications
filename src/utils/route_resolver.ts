@@ -60,7 +60,12 @@ export function resolveRoute(
 
   // 4. Config routing field mapping
   const fields = routingConfig[channel]
-  if (fields && fields.length > 0 && notifiable.original && typeof notifiable.original === 'object') {
+  if (
+    fields &&
+    fields.length > 0 &&
+    notifiable.original &&
+    typeof notifiable.original === 'object'
+  ) {
     for (const field of fields) {
       const value = (notifiable.original as Record<string, unknown>)[field]
       if (value !== undefined && value !== null) {
@@ -70,9 +75,5 @@ export function resolveRoute(
   }
 
   // 5. Throw with context
-  throw new E_NOTIFICATION_ROUTE_MISSING([
-    channel,
-    notifiable.type,
-    notification.constructor.name,
-  ])
+  throw new E_NOTIFICATION_ROUTE_MISSING([channel, notifiable.type, notification.constructor.name])
 }
