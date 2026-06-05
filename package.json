@@ -1,0 +1,134 @@
+{
+  "name": "adonisjs-notifications",
+  "description": "Send notifications through multiple channels with Laravel-inspired ergonomics for AdonisJS v7",
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "type": "module",
+  "files": [
+    "build",
+    "!build/bin",
+    "!build/tests"
+  ],
+  "main": "build/index.js",
+  "exports": {
+    ".": "./build/index.js",
+    "./types": "./build/src/types.js",
+    "./services/main": "./build/services/main.js",
+    "./notification_provider": "./build/providers/notification_provider.js",
+    "./commands": "./build/commands/main.js",
+    "./commands/*": "./build/commands/*.js",
+    "./mixins": "./build/src/mixins/main.js",
+    "./testing": "./build/src/testing/main.js",
+    "./channels/*": "./build/src/channels/*.js"
+  },
+  "scripts": {
+    "copy:templates": "copyfiles \"stubs/**/*.stub\" build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "quick:test": "node --import=@poppinss/ts-exec --enable-source-maps bin/test.ts",
+    "pretest": "npm run lint",
+    "test": "c8 npm run quick:test",
+    "precompile": "npm run lint",
+    "compile": "tsdown && tsc --emitDeclarationOnly --declaration",
+    "postcompile": "npm run copy:templates",
+    "build": "npm run compile",
+    "release": "release-it",
+    "version": "npm run build",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": ["adonisjs", "adonisjs-package", "notifications", "mail", "database", "queue", "channels", "laravel-notifications"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@adonisjs/assembler": "^8.0.0",
+    "@adonisjs/core": "^7.0.1",
+    "@adonisjs/eslint-config": "^3.0.0",
+    "@adonisjs/prettier-config": "^1.4.5",
+    "@adonisjs/tsconfig": "^2.0.0",
+    "@japa/assert": "^4.2.0",
+    "@japa/runner": "^5.3.0",
+    "@poppinss/ts-exec": "^1.4.4",
+    "@release-it/conventional-changelog": "^10.0.5",
+    "@types/node": "^25.3.5",
+    "c8": "^11.0.0",
+    "copyfiles": "^2.4.1",
+    "cross-env": "^10.1.0",
+    "eslint": "^10.0.3",
+    "prettier": "^3.8.1",
+    "release-it": "^19.2.4",
+    "tsdown": "^0.21.0",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "@adonisjs/core": "^7.0.0",
+    "@adonisjs/assembler": "^8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@adonisjs/assembler": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "tsdown": {
+    "entry": [
+      "./index.ts",
+      "./configure.ts",
+      "./services/main.ts",
+      "./providers/notification_provider.ts",
+      "./commands/main.ts",
+      "./src/mixins/main.ts",
+      "./src/testing/main.ts",
+      "./src/types.ts",
+      "./src/channels/index.ts"
+    ],
+    "outDir": "./build",
+    "clean": true,
+    "format": "esm",
+    "minify": "dce-only",
+    "fixedExtension": false,
+    "dts": false,
+    "treeshake": false,
+    "sourcemaps": false,
+    "target": "esnext"
+  },
+  "release-it": {
+    "git": {
+      "requireCleanWorkingDir": true,
+      "requireUpstream": true,
+      "commitMessage": "chore(release): ${version}",
+      "tagAnnotation": "v${version}",
+      "push": true,
+      "tagName": "v${version}"
+    },
+    "github": {
+      "release": true
+    },
+    "npm": {
+      "publish": true,
+      "skipChecks": true
+    },
+    "plugins": {
+      "@release-it/conventional-changelog": {
+        "preset": {
+          "name": "angular"
+        }
+      }
+    }
+  },
+  "c8": {
+    "reporter": [
+      "text",
+      "html"
+    ],
+    "exclude": [
+      "tests/**"
+    ]
+  },
+  "prettier": "@adonisjs/prettier-config"
+}
