@@ -1,11 +1,11 @@
 import { test } from '@japa/runner'
 import { compose } from '@adonisjs/core/helpers'
 import { BaseModel, column } from '@adonisjs/lucid/orm'
-import { Notifies } from '../../src/mixins/notifies.js'
+import { withNotifications } from '../../src/mixins/with_notifications.js'
 
 // ─── Setup: Minimal Lucid-backed notifiable models ──────────────────────────
 
-class TestModel extends compose(BaseModel, Notifies()) {
+class TestModel extends compose(BaseModel, withNotifications()) {
   static table = 'test_models'
 
   @column({ isPrimary: true })
@@ -14,7 +14,6 @@ class TestModel extends compose(BaseModel, Notifies()) {
   @column()
   declare name: string
 }
-
 
 // ─── Mock DatabaseNotification for query tests ──────────────────
 
@@ -50,10 +49,10 @@ function createMockQuery() {
 
 // ─── Test Group ───────────────────────────────────────────────
 
-test.group('Notifies mixin', () => {
+test.group('withNotifications mixin', () => {
   // ─── Group 1: Composition ─────────────────────────────────
 
-  test('model composed with Notifies() compiles and instantiates', ({ assert }) => {
+  test('model composed with withNotifications() compiles and instantiates', ({ assert }) => {
     const instance = new TestModel()
     assert.instanceOf(instance, TestModel)
     assert.instanceOf(instance, BaseModel)
@@ -74,7 +73,9 @@ test.group('Notifies mixin', () => {
     assert.isFalse(instance.$isPersisted)
   })
 
-  test('model with Notifies() still works with other mixins via compose()', ({ assert }) => {
+  test('model with withNotifications() still works with other mixins via compose()', ({
+    assert,
+  }) => {
     const mixinB = (superclass: any) =>
       class extends superclass {
         greet() {
@@ -82,7 +83,7 @@ test.group('Notifies mixin', () => {
         }
       }
 
-    class MultiModel extends compose(BaseModel, Notifies(), mixinB) {
+    class MultiModel extends compose(BaseModel, withNotifications(), mixinB) {
       @column({ isPrimary: true })
       declare id: number
     }
@@ -252,7 +253,7 @@ test.group('Notifies mixin', () => {
   })
 
   test('uses model constructor name when table name is not set', async ({ assert }) => {
-    class UnnamedModel extends compose(BaseModel, Notifies()) {
+    class UnnamedModel extends compose(BaseModel, withNotifications()) {
       @column({ isPrimary: true })
       declare id: number
     }

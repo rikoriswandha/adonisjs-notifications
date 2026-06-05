@@ -5,7 +5,7 @@ import type { Notification } from '../notification.ts'
 import type { NotificationManager } from '../notification_manager.ts'
 
 /**
- * Interface for models that use the Notifies mixin.
+ * Interface for models that use the withNotifications mixin.
  */
 export interface NotifiesRow {
   /**
@@ -40,7 +40,7 @@ export interface NotifiesRow {
 }
 
 /**
- * Type for a class that has been mixed with Notifies.
+ * Type for a class that has been mixed with withNotifications.
  */
 export type NotifiesClass<Model extends NormalizeConstructor<typeof BaseModel>> = Model & {
   new (...args: any[]): NotifiesRow
@@ -54,15 +54,15 @@ export type NotifiesClass<Model extends NormalizeConstructor<typeof BaseModel>> 
  * ```ts
  * import { compose } from '@adonisjs/core/helpers'
  * import { BaseModel, column } from '@adonisjs/lucid/orm'
- * import { Notifies } from 'adonisjs-notifications/mixins'
+ * import { withNotifications } from 'adonisjs-notifications/mixins'
  *
- * export default class User extends compose(BaseModel, Notifies()) {
+ * export default class User extends compose(BaseModel, withNotifications()) {
  *   @column({ isPrimary: true })
  *   declare id: number
  * }
  * ```
  */
-export function Notifies() {
+export function withNotifications() {
   return function <Model extends NormalizeConstructor<typeof BaseModel>>(
     superclass: Model
   ): NotifiesClass<Model> {

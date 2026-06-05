@@ -1,1 +1,1 @@
-export { Notifies } from './notifies.ts'
+export { withNotifications } from './with_notifications.ts'
