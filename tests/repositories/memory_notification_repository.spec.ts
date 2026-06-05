@@ -443,4 +443,124 @@ test.group('MemoryNotificationRepository', () => {
     assert.lengthOf(repo.getAllNotifications(), 0)
     assert.lengthOf(repo.getAllDeliveries(), 0)
   })
+  test('findFailedForRetry returns only failed deliveries ordered by failedAt asc', async ({
+    assert,
+  }) => {
+    const repo = new MemoryNotificationRepository()
+    const sent = await repo.storeDelivery({
+      notificationType: 'OrderShipped',
+      notifiableType: 'User',
+      notifiableId: '1',
+      channel: 'mail',
+      status: 'pending',
+      dedupeKey: 'dedupe-sent',
+    })
+    await repo.updateDeliveryStatus(sent.id, 'sent')
+    await repo.storeDelivery({
+      notificationType: 'OrderShipped',
+      notifiableType: 'User',
+      notifiableId: '1',
+      channel: 'mail',
+      status: 'pending',
+      dedupeKey: 'dedupe-pending',
+    })
+    const failed = await repo.storeDelivery({
+      notificationType: 'OrderShipped',
+      notifiableType: 'User',
+      notifiableId: '1',
+      channel: 'mail',
+      status: 'pending',
+      dedupeKey: 'dedupe-failed',
+    })
+    await repo.updateDeliveryStatus(failed.id, 'failed', {
+      error: { message: 'SMTP error' },
+    })
+    // Manually set failedAt to ensure deterministic ordering
+    const all = repo.getAllDeliveries()
+    const failedRecord = all.find((d) => d.id === failed.id)!
+    const fixedDate = new Date('2026-01-15T10:00:00Z')
+    failedRecord.failedAt = fixedDate
+    const result = await repo.findFailedForRetry()
+    assert.lengthOf(result, 1)
+    assert.equal(result[0].id, failed.id)
+    assert.equal(result[0].status, 'failed')
+    assert.equal(result[0].failedAt!.getTime(), fixedDate.getTime())
+  })
+  test('findFailedForRetry filters by channel', async ({ assert }) => {
+    const repo = new MemoryNotificationRepository()
+    const mailFailed = await repo.storeDelivery({
+      notificationType: 'OrderShipped',
+      notifiableType: 'User',
+      notifiableId: '1',
+      channel: 'mail',
+      status: 'pending',
+      dedupeKey: 'dedupe-mail',
+    })
+    await repo.updateDeliveryStatus(mailFailed.id, 'failed', {
+      error: { message: 'SMTP error' },
+    })
+    const smsFailed = await repo.storeDelivery({
+      notificationType: 'OrderShipped',
+      notifiableType: 'User',
+      notifiableId: '1',
+      channel: 'sms',
+      status: 'pending',
+      dedupeKey: 'dedupe-sms',
+    })
+    await repo.updateDeliveryStatus(smsFailed.id, 'failed', {
+      error: { message: 'Twilio error' },
+    })
+    const result = await repo.findFailedForRetry({ channel: 'mail' })
+    assert.lengthOf(result, 1)
+    assert.equal(result[0].id, mailFailed.id)
+    assert.equal(result[0].channel, 'mail')
+  })
+  test('findFailedForRetry respects limit', async ({ assert }) => {
+    const repo = new MemoryNotificationRepository()
+    const baseDate = new Date('2026-01-15T10:00:00Z')
+    for (let i = 0; i < 5; i++) {
+      const delivery = await repo.storeDelivery({
+        notificationType: 'OrderShipped',
+        notifiableType: 'User',
+        notifiableId: '1',
+        channel: 'mail',
+        status: 'pending',
+        dedupeKey: `dedupe-fail-${i}`,
+      })
+      await repo.updateDeliveryStatus(delivery.id, 'failed', {
+        error: { message: `Error ${i}` },
+      })
+      // Set staggered failedAt dates (older first)
+      const all = repo.getAllDeliveries()
+      const record = all.find((d) => d.id === delivery.id)!
+      record.failedAt = new Date(baseDate.getTime() + i * 60000)
+    }
+    const result = await repo.findFailedForRetry({ limit: 2 })
+    assert.lengthOf(result, 2)
+    // Verify ascending order (oldest first)
+    assert.equal(result[0].dedupeKey, 'dedupe-fail-0')
+    assert.equal(result[1].dedupeKey, 'dedupe-fail-1')
+  })
+  test('findFailedForRetry returns empty array when no failures', async ({ assert }) => {
+    const repo = new MemoryNotificationRepository()
+    const sent = await repo.storeDelivery({
+      notificationType: 'OrderShipped',
+      notifiableType: 'User',
+      notifiableId: '1',
+      channel: 'mail',
+      status: 'pending',
+      dedupeKey: 'dedupe-sent',
+    })
+    await repo.updateDeliveryStatus(sent.id, 'sent')
+    await repo.storeDelivery({
+      notificationType: 'OrderShipped',
+      notifiableType: 'User',
+      notifiableId: '1',
+      channel: 'mail',
+      status: 'pending',
+      dedupeKey: 'dedupe-pending',
+    })
+    const result = await repo.findFailedForRetry()
+    assert.lengthOf(result, 0)
+  })
 })

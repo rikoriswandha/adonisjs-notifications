@@ -3,7 +3,14 @@ import type { DeliveryContext } from './contracts/delivery.ts'
 import type { NotificationChannel } from './contracts/channels.ts'
 import type { NormalizedNotifiable } from './contracts/notifiable.ts'
 import type { NotificationEmitter, NotificationEventPayload } from './contracts/events.ts'
-import type { Notification } from './notification.ts'
+import type {
+  NotificationRepository,
+  RetryOptions,
+  RetryResult,
+  DeliveryAttemptAttributes,
+  DeliveryAttemptRow,
+} from './contracts/repository.ts'
+import { Notification } from './notification.ts'
 import { NotificationRouter } from './notification_router.ts'
 import { normalizeRecipients } from './utils/notifiable_resolver.ts'
 import { resolveChannelMessage } from './utils/channel_resolver.ts'
@@ -47,6 +54,7 @@ export interface QueuePayload {
 export class NotificationManager {
   private channels: Map<string, NotificationChannel> = new Map()
   private queueDispatcher?: QueueDispatcher
+  private repository?: NotificationRepository
 
   constructor(
     protected config: NotificationConfig,
@@ -65,6 +73,12 @@ export class NotificationManager {
    */
   setQueueDispatcher(dispatcher: QueueDispatcher): void {
     this.queueDispatcher = dispatcher
+  }
+  /**
+   * Set the notification repository (called by provider during boot).
+   */
+  setRepository(repository: NotificationRepository): void {
+    this.repository = repository
   }
 
   /**
@@ -236,59 +250,180 @@ export class NotificationManager {
       })
       return
     }
-
     // Resolve channel
     const channel = await this.resolveChannel(channelName)
-
+    // Build dedupe key
+    const notificationType = notification.constructor.name
+    const serializedNotifiable = serializeNotifiable(notifiable)
+    const dedupeKey = generateDedupeKey(
+      notificationType,
+      notification.instanceId,
+      serializedNotifiable.type,
+      serializedNotifiable.id,
+      channelName
+    )
+    // Dedupe check
+    let deliveryRecord: DeliveryAttemptRow | undefined
+    if (this.repository && this.config.delivery.recordAttempts) {
+      const existing = await this.repository.findDeliveryByDedupeKey(dedupeKey)
+      if (existing && (existing.status === 'sent' || existing.status === 'pending')) {
+        this.emitEvent(NOTIFICATION_SKIPPED, {
+          notification,
+          notifiable,
+          channel: channelName,
+          deliveryId: existing.id,
+          metadata: { reason: 'deduplicated', dedupeKey },
+        })
+        return
+      }
+    }
+    // Create pending delivery record
+    if (this.repository && this.config.delivery.recordAttempts) {
+      const attrs: DeliveryAttemptAttributes = {
+        notificationType,
+        notifiableType: serializedNotifiable.type,
+        notifiableId: serializedNotifiable.id,
+        channel: channelName,
+        status: 'pending',
+        dedupeKey,
+        attempts: 0,
+      }
+      deliveryRecord = await this.repository.storeDelivery(attrs)
+    }
+    const deliveryId = deliveryRecord?.id
     // Emit sending event
     this.emitEvent(NOTIFICATION_SENDING, {
       notification,
       notifiable,
       channel: channelName,
-      metadata: {},
+      deliveryId,
+      metadata: { dedupeKey },
     })
-
-    try {
-      // Resolve route if channel requires it (skip if requiresRoute === false)
-      if (channel.requiresRoute !== false) {
-        const route = resolveRoute(notification, notifiable, channelName, this.config.routing)
-        notifiable.routes.set(channelName, route)
+    let lastError: Error | undefined
+    const maxAttempts = this.config.delivery.retry.attempts
+    const backoff = this.config.delivery.retry.backoff
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        // Resolve route if channel requires it (skip if requiresRoute === false)
+        if (channel.requiresRoute !== false) {
+          const route = resolveRoute(notification, notifiable, channelName, this.config.routing)
+          notifiable.routes.set(channelName, route)
+        }
+        // Resolve message (skip if channel resolves its own message)
+        const message = channel.resolvesOwnMessage
+          ? null
+          : resolveChannelMessage(notification, notifiable.original, channelName)
+        // Build delivery context
+        const context = this.buildDeliveryContext(notifiable, notification, channelName, message)
+        // Send through channel
+        const result = await channel.send(context)
+        // Success: update delivery record
+        if (deliveryRecord) {
+          await this.repository!.updateDeliveryStatus(deliveryRecord.id, 'sent', {
+            attempts: attempt,
+            providerMessageId: result.providerMessageId ?? null,
+          })
+        }
+        // Emit sent event
+        this.emitEvent(NOTIFICATION_SENT, {
+          notification,
+          notifiable,
+          channel: channelName,
+          deliveryId,
+          result,
+          metadata: { dedupeKey, attempts: attempt },
+        })
+        return
+      } catch (error) {
+        lastError = error as Error
+        // Update delivery record with attempt count and error
+        if (deliveryRecord) {
+          const errorData: Record<string, unknown> = {
+            message: lastError.message,
+            stack: lastError.stack ?? null,
+            attempt,
+          }
+          await this.repository!.updateDeliveryStatus(
+            deliveryRecord.id,
+            attempt < maxAttempts ? 'pending' : 'failed',
+            {
+              attempts: attempt,
+              error: errorData,
+            }
+          )
+        }
+        // Retry if attempts remain and backoff is configured for this attempt
+        if (attempt < maxAttempts && backoff[attempt - 1] !== undefined) {
+          await this.sleep(backoff[attempt - 1])
+          continue
+        }
+        // Final failure: update status if not already failed
+        if (deliveryRecord && attempt === maxAttempts) {
+          const errorData: Record<string, unknown> = {
+            message: lastError.message,
+            stack: lastError.stack ?? null,
+            attempt,
+          }
+          await this.repository!.updateDeliveryStatus(deliveryRecord.id, 'failed', {
+            attempts: attempt,
+            error: errorData,
+          })
+        }
+        break
       }
-
-      // Resolve message (skip if channel resolves its own message)
-      const message = channel.resolvesOwnMessage
-        ? null
-        : resolveChannelMessage(notification, notifiable.original, channelName)
-
-      // Build delivery context
-      const context = this.buildDeliveryContext(notifiable, notification, channelName, message)
-
-      // Send through channel
-      const result = await channel.send(context)
-
-      // Emit sent event
-      this.emitEvent(NOTIFICATION_SENT, {
-        notification,
-        notifiable,
-        channel: channelName,
-        result,
-        metadata: {},
-      })
-    } catch (error) {
-      // Emit failed event
-      this.emitEvent(NOTIFICATION_FAILED, {
-        notification,
-        notifiable,
-        channel: channelName,
-        error: error as Error,
-        metadata: {},
-      })
-
-      // Re-throw to preserve error propagation
-      throw error
     }
+    // Emit failed event
+    this.emitEvent(NOTIFICATION_FAILED, {
+      notification,
+      notifiable,
+      channel: channelName,
+      deliveryId,
+      error: lastError!,
+      metadata: { dedupeKey, attempts: maxAttempts },
+    })
+    // Always throw after retry exhaustion to preserve error propagation
+    throw lastError
   }
-
+  /**
+   * Retry failed deliveries that are eligible for re-attempt.
+   */
+  async retryFailedDeliveries(options?: RetryOptions): Promise<RetryResult> {
+    if (!this.repository) {
+      return { retried: 0, skipped: 0, errors: [] }
+    }
+    const failed = await this.repository.findFailedForRetry(options)
+    const result: RetryResult = { retried: 0, skipped: 0, errors: [] }
+    for (const delivery of failed) {
+      try {
+        // Reconstruct a minimal notifiable from the delivery record
+        const notifiable = {
+          original: { id: delivery.notifiableId } as any,
+          type: delivery.notifiableType,
+          id: delivery.notifiableId,
+          routes: new Map<string, unknown>(),
+        }
+        // Create a minimal notification stub
+        const notification = new (class extends Notification {
+          via() {
+            return [delivery.channel]
+          }
+          [key: string]: any
+        })()
+        // Re-deliver
+        await this.deliver(notifiable as NormalizedNotifiable, notification, delivery.channel)
+        result.retried++
+      } catch (error) {
+        result.errors.push({ deliveryId: delivery.id, error })
+      }
+    }
+    return result
+  }
+  /**
+   * Sleep for the given number of milliseconds.
+   */
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms))
+  }
   /**
    * Build the delivery context passed to channel.send().
    */

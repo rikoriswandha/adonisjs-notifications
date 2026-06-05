@@ -226,6 +226,23 @@ export class LucidNotificationRepository implements NotificationRepository {
   }
 
   /**
+   * Find failed deliveries eligible for retry, ordered by failedAt ascending.
+   */
+  async findFailedForRetry(
+    options?: import('../contracts/repository.ts').RetryOptions
+  ): Promise<DeliveryAttemptRow[]> {
+    const Model = await this.getDeliveryModel()
+    const query = Model.query().where('status', 'failed').orderBy('failed_at', 'asc')
+    if (options?.channel) {
+      query.where('channel', options.channel)
+    }
+    if (options?.limit) {
+      query.limit(options.limit)
+    }
+    const records = await query
+    return records.map((r: any) => this.serializeDelivery(r))
+  }
+  /**
    * Prune old notifications.
    */
   async prune(olderThan: Date): Promise<number> {

@@ -82,9 +82,9 @@ export default class NotificationProvider {
       await import('@adonisjs/lucid')
       const { LucidNotificationRepository } =
         await import('../src/repositories/lucid_notification_repository.ts')
-      this.app.container.singleton('notification.repository', () => {
-        return new LucidNotificationRepository()
-      })
+      const repo = new LucidNotificationRepository()
+      this.app.container.singleton('notification.repository', () => repo)
+      manager.setRepository(repo)
     } catch {
       // Lucid not installed - repository binding not available
     }

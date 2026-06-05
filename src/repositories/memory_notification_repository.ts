@@ -215,6 +215,26 @@ export class MemoryNotificationRepository implements NotificationRepository {
   }
 
   /**
+   * Find failed deliveries eligible for retry, ordered by failedAt ascending.
+   */
+  async findFailedForRetry(
+    options?: import('../contracts/repository.ts').RetryOptions
+  ): Promise<DeliveryAttemptRow[]> {
+    let results = Array.from(this.deliveries.values()).filter((d) => d.status === 'failed')
+    if (options?.channel) {
+      results = results.filter((d) => d.channel === options.channel)
+    }
+    results.sort((a, b) => {
+      const timeA = a.failedAt?.getTime() ?? 0
+      const timeB = b.failedAt?.getTime() ?? 0
+      return timeA - timeB
+    })
+    if (options?.limit) {
+      results = results.slice(0, options.limit)
+    }
+    return results.map((d) => ({ ...d }))
+  }
+  /**
    * Prune old notifications.
    */
   async prune(olderThan: Date): Promise<number> {

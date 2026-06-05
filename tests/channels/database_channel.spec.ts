@@ -163,6 +163,7 @@ test.group('DatabaseChannel', () => {
       }),
       updateDeliveryStatus: async () => {},
       findDeliveryByDedupeKey: async () => null,
+      findFailedForRetry: async () => [],
       prune: async () => 0,
       pruneDeliveries: async () => 0,
     }

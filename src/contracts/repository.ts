@@ -69,6 +69,21 @@ export interface DeliveryAttemptRow {
 }
 
 /**
+ * Options for querying failed deliveries for retry.
+ */
+export interface RetryOptions {
+  channel?: string
+  limit?: number
+}
+/**
+ * Summary result of a retry operation.
+ */
+export interface RetryResult {
+  retried: number
+  skipped: number
+  errors: { deliveryId: string; error: unknown }[]
+}
+/**
  * Options for listing notifications.
  */
 export interface ListOptions {
@@ -100,7 +115,6 @@ export interface NotificationRepository {
   markAllAsRead(notifiableType: string, notifiableId: string | number): Promise<void>
   markAsSeen(id: string): Promise<void>
   unreadCount(notifiableType: string, notifiableId: string | number): Promise<number>
-
   // Delivery operations
   storeDelivery(delivery: DeliveryAttemptAttributes): Promise<DeliveryAttemptRow>
   updateDeliveryStatus(
@@ -109,6 +123,7 @@ export interface NotificationRepository {
     data?: Partial<DeliveryAttemptRow>
   ): Promise<void>
   findDeliveryByDedupeKey(key: string): Promise<DeliveryAttemptRow | null>
+  findFailedForRetry(options?: RetryOptions): Promise<DeliveryAttemptRow[]>
 
   // Cleanup
   prune(olderThan: Date): Promise<number>
