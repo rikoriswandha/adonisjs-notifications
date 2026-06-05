@@ -1,0 +1,49 @@
+{{{
+  exports({
+    to: app.makePath('app/notifications', entity.path, entity.name + '.ts')
+  })
+}}}
+import { Notification } from 'adonisjs-notifications'
+{{#if mail}}
+import { MailMessage } from 'adonisjs-notifications'
+{{/if}}
+
+export default class {{ entity.name }} extends Notification {
+{{#if queued}}
+  public shouldQueue = true
+{{/if}}
+{{#if queue}}
+  public queue = '{{ queue }}'
+{{/if}}
+
+  via(notifiable: unknown) {
+    const channels: string[] = []
+{{#if mail}}
+    channels.push('mail')
+{{/if}}
+{{#if database}}
+    channels.push('database')
+{{/if}}
+{{#if !mail && !database}}
+    channels.push('log')
+{{/if}}
+    return channels
+  }
+
+{{#if mail}}
+  toMail(notifiable: unknown) {
+    return MailMessage.create()
+      .subject('{{ entity.name }}')
+      .line('Add your notification content here.')
+  }
+
+{{/if}}
+{{#if database}}
+  toDatabase(notifiable: unknown) {
+    return {
+      // Add your database notification data here
+    }
+  }
+
+{{/if}}
+}

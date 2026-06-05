@@ -46,8 +46,9 @@ export async function configure(command: Configure) {
     )
   }
 
-  // Register provider in adonisrc.ts
   await codemods.updateRcFile((rcFile) => {
-    rcFile.addProvider('adonisjs-notifications/notification_provider')
+    rcFile
+      .addProvider('adonisjs-notifications/notification_provider')
+      .addCommand('adonisjs-notifications/commands')
   })
 }
