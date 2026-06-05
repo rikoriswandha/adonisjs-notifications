@@ -41,10 +41,7 @@ export interface NotificationFakeAssertions {
   ): void
   assertNoneQueued(): void
   assertSentCount(count: number): void
-  assertSentCount(
-    notificationClass: new (...args: unknown[]) => Notification,
-    count: number
-  ): void
+  assertSentCount(notificationClass: new (...args: unknown[]) => Notification, count: number): void
   assertQueuedCount(count: number): void
   assertQueuedCount(
     notificationClass: new (...args: unknown[]) => Notification,

@@ -18,9 +18,11 @@ function createMockCommand<T extends new (...args: any[]) => any>(
 function parseDuration(value: string): number {
   const match = value.match(/^([0-9]+)\s*(d|h|m|s)?$/)
   if (!match) {
-    throw new Error(`Invalid duration format: "${value}". Expected format like "90d", "30h", "15m".`)
+    throw new Error(
+      `Invalid duration format: "${value}". Expected format like "90d", "30h", "15m".`
+    )
   }
-  const amount = parseInt(match[1], 10)
+  const amount = Number.parseInt(match[1], 10)
   const unit = match[2] || 'd'
   const multipliers: Record<string, number> = {
     s: 1000,
@@ -103,7 +105,9 @@ test.group('NotificationsPrune command', () => {
     assert.include(logMessages.join(' '), 'Total pruned: 5')
   })
 
-  test('delegates to repository.pruneDeliveries when --failed-older-than is set', async ({ assert }) => {
+  test('delegates to repository.pruneDeliveries when --failed-older-than is set', async ({
+    assert,
+  }) => {
     const pruneDeliveryCalls: Date[] = []
     const mockRepository = {
       prune: async () => 0,

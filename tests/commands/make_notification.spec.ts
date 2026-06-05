@@ -19,7 +19,10 @@ test.group('MakeNotification command', (group) => {
   let tempDir: string
 
   group.each.setup(async () => {
-    tempDir = join(tmpdir(), `notification-test-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+    tempDir = join(
+      tmpdir(),
+      `notification-test-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    )
     mkdirSync(tempDir, { recursive: true })
   })
 
@@ -46,9 +49,14 @@ test.group('MakeNotification command', (group) => {
         ({
           overwriteExisting: false,
           makeUsingStub: async (_stubsRoot: string, _stubPath: string, data: any) => {
-            writtenFile = join(tempDir, 'app/notifications', data.entity.path, data.entity.name + '.ts')
+            writtenFile = join(
+              tempDir,
+              'app/notifications',
+              data.entity.path,
+              data.entity.name + '.ts'
+            )
           },
-        } as any),
+        }) as any,
     })
 
     await command.run()
@@ -67,7 +75,11 @@ test.group('MakeNotification command', (group) => {
       mail: true,
       database: true,
       force: false,
-      parsed: { flags: { queued: true, mail: true, database: true }, args: ['WelcomeEmail'], unknownFlags: {} },
+      parsed: {
+        flags: { queued: true, mail: true, database: true },
+        args: ['WelcomeEmail'],
+        unknownFlags: {},
+      },
       app: {
         generators: { createEntity: () => entity },
         makePath: (...parts: string[]) => join(tempDir, ...parts),
@@ -78,7 +90,7 @@ test.group('MakeNotification command', (group) => {
           makeUsingStub: async (_stubsRoot: string, _stubPath: string, data: any) => {
             capturedData = data
           },
-        } as any),
+        }) as any,
     })
 
     await command.run()
@@ -110,7 +122,7 @@ test.group('MakeNotification command', (group) => {
           makeUsingStub: async (_stubsRoot: string, _stubPath: string, data: any) => {
             capturedData = data
           },
-        } as any),
+        }) as any,
     })
 
     await command.run()
@@ -135,7 +147,7 @@ test.group('MakeNotification command', (group) => {
         ({
           overwriteExisting: true,
           makeUsingStub: async () => {},
-        } as any),
+        }) as any,
     })
 
     await command.run()

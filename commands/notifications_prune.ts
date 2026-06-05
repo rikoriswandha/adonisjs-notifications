@@ -7,9 +7,11 @@ import type { CommandOptions } from '@adonisjs/core/types/ace'
 function parseDuration(value: string): number {
   const match = value.match(/^([0-9]+)\s*(d|h|m|s)?$/)
   if (!match) {
-    throw new Error(`Invalid duration format: "${value}". Expected format like "90d", "30h", "15m".`)
+    throw new Error(
+      `Invalid duration format: "${value}". Expected format like "90d", "30h", "15m".`
+    )
   }
-  const amount = parseInt(match[1], 10)
+  const amount = Number.parseInt(match[1], 10)
   const unit = match[2] || 'd'
   const multipliers: Record<string, number> = {
     s: 1000,
@@ -59,7 +61,9 @@ export default class NotificationsPrune extends BaseCommand {
     }
 
     if (totalPruned === 0) {
-      this.logger.info('Nothing to prune. Use --older-than or --failed-older-than to specify a duration.')
+      this.logger.info(
+        'Nothing to prune. Use --older-than or --failed-older-than to specify a duration.'
+      )
     } else {
       this.logger.success(`Total pruned: ${totalPruned}`)
     }

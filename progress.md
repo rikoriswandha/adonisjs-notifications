@@ -15,7 +15,6 @@
   - `docs/execution-plan.md`
 - Verified line counts and replaced non-ASCII tree characters in `docs/architecture-plan.md`.
 
-
 ## Phase 5: Log and Null Channels (Completed)
 
 - Implemented PII redaction utility (`src/utils/redactor.ts`) with pattern matching for emails, phones, URLs with tokens, and JWTs.

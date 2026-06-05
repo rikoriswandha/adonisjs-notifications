@@ -61,7 +61,11 @@ function createConfig(
     channels,
     queue: { enabled: false, defaultQueue: 'default' },
     routing: {},
-    database: { table: 'notifications', deliveriesTable: 'notification_deliveries', idStrategy: 'uuid' },
+    database: {
+      table: 'notifications',
+      deliveriesTable: 'notification_deliveries',
+      idStrategy: 'uuid',
+    },
     delivery: { recordAttempts: false, failFast: true, retry: { attempts: 1, backoff: [] } },
     serialization: { notificationAliases: {}, notifiableAliases: {} },
     preferences: { quietHours: { enabled: false, bypassPriorities: [] } },
@@ -179,7 +183,9 @@ test.group('FakeNotificationManager - Recording send/sendNow', () => {
 })
 
 test.group('FakeNotificationManager - Selective channel faking', () => {
-  test('fake({ channels: ["mail"] }) intercepts mail, delegates mock to real', async ({ assert }) => {
+  test('fake({ channels: ["mail"] }) intercepts mail, delegates mock to real', async ({
+    assert,
+  }) => {
     const mockChannel = new MockChannel()
     const mailChannel = new MockChannel()
     mailChannel.name = 'mail'
@@ -221,7 +227,10 @@ test.group('FakeNotificationManager - assertSent', () => {
     const manager = new NotificationManager(config)
     const fake = manager.fake()
 
-    assert.throws(() => fake.assertSent(TestNotification), /Expected notification TestNotification to be sent/)
+    assert.throws(
+      () => fake.assertSent(TestNotification),
+      /Expected notification TestNotification to be sent/
+    )
   })
 
   test('assertSent with predicate', async ({ assert }) => {
@@ -233,10 +242,16 @@ test.group('FakeNotificationManager - assertSent', () => {
     await manager.sendNow(notifiable, new FilterableNotification('world'))
 
     assert.doesNotThrow(() =>
-      fake.assertSent(FilterableNotification, (n) => (n.notification as FilterableNotification).subject === 'world')
+      fake.assertSent(
+        FilterableNotification,
+        (n) => (n.notification as FilterableNotification).subject === 'world'
+      )
     )
     assert.throws(() =>
-      fake.assertSent(FilterableNotification, (n) => (n.notification as FilterableNotification).subject === 'nope')
+      fake.assertSent(
+        FilterableNotification,
+        (n) => (n.notification as FilterableNotification).subject === 'nope'
+      )
     )
   })
 })
@@ -497,7 +512,9 @@ test.group('FakeNotificationManager - sent() / queued() query methods', () => {
     await manager.sendNow(notifiable, new FilterableNotification('hello'))
     await manager.sendNow(notifiable, new FilterableNotification('world'))
 
-    const filtered = fake.sent((n) => (n.notification as FilterableNotification).subject === 'hello')
+    const filtered = fake.sent(
+      (n) => (n.notification as FilterableNotification).subject === 'hello'
+    )
     assert.equal(filtered.length, 1)
   })
 

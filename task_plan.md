@@ -13,13 +13,13 @@ Create durable planning documents for a comprehensive AdonisJS v7 notification s
 
 ## Phases
 
-| Phase | Status | Notes |
-| --- | --- | --- |
-| Review framework/package constraints | complete | Used AdonisJS v7 docs and local package starter files. |
-| Capture findings | complete | Recorded Adonis v7, package, queue, mail, and repo constraints. |
-| Draft architecture plan | complete | Created full architecture design document. |
-| Draft execution plan | complete | Created phased implementation roadmap with acceptance checks. |
-| Verify files | complete | Confirmed files exist, checked line counts, and replaced non-ASCII tree characters with ASCII. |
+| Phase                                | Status   | Notes                                                                                          |
+| ------------------------------------ | -------- | ---------------------------------------------------------------------------------------------- |
+| Review framework/package constraints | complete | Used AdonisJS v7 docs and local package starter files.                                         |
+| Capture findings                     | complete | Recorded Adonis v7, package, queue, mail, and repo constraints.                                |
+| Draft architecture plan              | complete | Created full architecture design document.                                                     |
+| Draft execution plan                 | complete | Created phased implementation roadmap with acceptance checks.                                  |
+| Verify files                         | complete | Confirmed files exist, checked line counts, and replaced non-ASCII tree characters with ASCII. |
 
 ## Decisions
 
@@ -31,6 +31,6 @@ Create durable planning documents for a comprehensive AdonisJS v7 notification s
 
 ## Errors Encountered
 
-| Error | Attempt | Resolution |
-| --- | --- | --- |
+| Error                                                             | Attempt            | Resolution                                  |
+| ----------------------------------------------------------------- | ------------------ | ------------------------------------------- |
 | `git status` failed because the directory is not a git repository | Initial repo check | Continued without git-specific assumptions. |

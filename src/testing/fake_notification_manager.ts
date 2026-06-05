@@ -231,13 +231,8 @@ export class FakeNotificationManager {
   }
 
   assertSentCount(count: number): void
-  assertSentCount(
-    notificationClass: new (...args: unknown[]) => Notification,
-    count: number
-  ): void
-  assertSentCount(
-    ...args: [number] | [new (...args: unknown[]) => Notification, number]
-  ): void {
+  assertSentCount(notificationClass: new (...args: unknown[]) => Notification, count: number): void
+  assertSentCount(...args: [number] | [new (...args: unknown[]) => Notification, number]): void {
     if (args.length === 1) {
       const [count] = args
       if (this.#sent.length !== count) {
@@ -267,9 +262,7 @@ export class FakeNotificationManager {
     notificationClass: new (...args: unknown[]) => Notification,
     count: number
   ): void
-  assertQueuedCount(
-    ...args: [number] | [new (...args: unknown[]) => Notification, number]
-  ): void {
+  assertQueuedCount(...args: [number] | [new (...args: unknown[]) => Notification, number]): void {
     if (args.length === 1) {
       const [count] = args
       if (this.#queued.length !== count) {
@@ -305,13 +298,11 @@ export class FakeNotificationManager {
       if (typeof getId === 'function') {
         const id = (getId as () => string | number).call(expected)
         const getType = obj.getNotificationType
-        const type = typeof getType === 'function'
-          ? (getType as () => string).call(expected)
-          : obj.constructor?.name
-        return (
-          recorded.notifiable.id === id &&
-          recorded.notifiable.type === type
-        )
+        const type =
+          typeof getType === 'function'
+            ? (getType as () => string).call(expected)
+            : obj.constructor?.name
+        return recorded.notifiable.id === id && recorded.notifiable.type === type
       }
       if ('id' in obj && recorded.notifiable.id === obj.id) return true
     }
@@ -323,13 +314,13 @@ export class FakeNotificationManager {
     if (typeof notifiable === 'object') {
       const obj = notifiable as Record<string, unknown>
       const getId = obj.getNotificationId
-      const id = typeof getId === 'function'
-        ? (getId as () => string | number).call(notifiable)
-        : obj.id
+      const id =
+        typeof getId === 'function' ? (getId as () => string | number).call(notifiable) : obj.id
       const getType = obj.getNotificationType
-      const type = typeof getType === 'function'
-        ? (getType as () => string).call(notifiable)
-        : obj.constructor?.name ?? 'object'
+      const type =
+        typeof getType === 'function'
+          ? (getType as () => string).call(notifiable)
+          : (obj.constructor?.name ?? 'object')
       return `${type}(${id})`
     }
     return String(notifiable)

@@ -1,6 +1,6 @@
 {{{
   exports({
-    to: app.migrationsPath('create_notifications_table')
+    to: app.makePath(migration.folder, entity.path, migration.fileName)
   })
 }}}
 import { BaseSchema } from '@adonisjs/lucid/schema'

@@ -4,19 +4,29 @@ import { NotificationManager } from '../notification_manager.ts'
 
 export { FakeNotificationManager } from './fake_notification_manager.ts'
 export { FakeNotificationRouter } from './fake_notification_router.ts'
-export type { RecordedNotification, NotificationFakeAssertions, FakeOptions } from '../contracts/testing.ts'
+export type {
+  RecordedNotification,
+  NotificationFakeAssertions,
+  FakeOptions,
+} from '../contracts/testing.ts'
 
 export interface CreateTestNotificationsOptions {
   config?: Partial<NotificationConfig>
   channels?: Record<string, NotificationChannel>
 }
 
-export async function createTestNotifications(options?: CreateTestNotificationsOptions): Promise<NotificationManager> {
+export async function createTestNotifications(
+  options?: CreateTestNotificationsOptions
+): Promise<NotificationManager> {
   const config: NotificationConfig = {
     channels: {},
     queue: { enabled: false, defaultQueue: 'default' },
     routing: {},
-    database: { table: 'notifications', deliveriesTable: 'notification_deliveries', idStrategy: 'uuid' },
+    database: {
+      table: 'notifications',
+      deliveriesTable: 'notification_deliveries',
+      idStrategy: 'uuid',
+    },
     delivery: { recordAttempts: false, failFast: true, retry: { attempts: 1, backoff: [] } },
     serialization: { notificationAliases: {}, notifiableAliases: {} },
     preferences: { quietHours: { enabled: false, bypassPriorities: [] } },

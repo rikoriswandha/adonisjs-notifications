@@ -40,4 +40,3 @@
 - Database notifications and delivery attempts should be separate records.
 - Initial channels should be limited to core, low-risk channels: `mail`, `database`, `log`, and `null`.
 - Later channels can include `sms`, `webhook`, `slack`, and `broadcast`.
-
