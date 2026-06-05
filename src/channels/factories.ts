@@ -33,6 +33,7 @@ export const channels = {
   /**
    * Log channel factory.
    * No external dependencies.
+   * Accepts optional logger for testing (defaults to AdonisJS Pino logger).
    */
   log(): NotificationChannelFactory {
     // Exception: Lazy loading pattern for consistency with other channel factories

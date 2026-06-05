@@ -136,8 +136,10 @@ export class NotificationManager {
         this.config.routing
       )
 
-      // Resolve message
-      const message = resolveChannelMessage(notification, notifiable.original, channelName)
+      // Resolve message (skip if channel resolves its own message)
+      const message = channel.resolvesOwnMessage
+        ? null
+        : resolveChannelMessage(notification, notifiable.original, channelName)
 
       // Build delivery context
       const context = this.buildDeliveryContext(notifiable, notification, channelName, message)

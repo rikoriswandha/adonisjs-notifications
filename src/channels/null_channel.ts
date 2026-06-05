@@ -9,6 +9,10 @@ export class NullChannel implements NotificationChannel<any, void> {
   name = 'null'
 
   async send(_context: DeliveryContext<any>): Promise<DeliveryResult<void>> {
-    return { success: true, status: 'sent' }
+    return {
+      success: true,
+      status: 'sent',
+      metadata: { processedAt: new Date().toISOString() },
+    }
   }
 }
