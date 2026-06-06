@@ -39,6 +39,7 @@
     "version": "npm run build",
     "prepublishOnly": "npm run build"
   },
+  "documentation": "https://github.com/your-org/adonisjs-notifications#readme",
   "keywords": [
     "adonisjs",
     "adonisjs-package",
@@ -47,9 +48,11 @@
     "database",
     "queue",
     "channels",
-    "laravel-notifications"
+    "laravel-notifications",
+    "test-fakes",
+    "inbox",
+    "messaging"
   ],
-  "author": "",
   "license": "MIT",
   "devDependencies": {
     "@adonisjs/assembler": "^8.0.0",
