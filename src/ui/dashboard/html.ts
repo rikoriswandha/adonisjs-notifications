@@ -53,7 +53,10 @@ export function createDashboardHtml(
     .join('')
 
   const typeRows = types
-    .map((t) => `<tr class="border-b border-gray-100 last:border-b-0"><td class="px-3 py-2.5 text-sm text-gray-900">${escapeHtml(t)}</td><td class="px-3 py-2.5 text-sm text-gray-700">${deliveries.byType[t]}</td></tr>`)
+    .map(
+      (t) =>
+        `<tr class="border-b border-gray-100 last:border-b-0"><td class="px-3 py-2.5 text-sm text-gray-900">${escapeHtml(t)}</td><td class="px-3 py-2.5 text-sm text-gray-700">${deliveries.byType[t]}</td></tr>`
+    )
     .join('')
 
   const inboxSection = inbox
@@ -75,7 +78,10 @@ export function createDashboardHtml(
           <tbody>
             ${Object.entries(inbox.byType)
               .sort(([a], [b]) => a.localeCompare(b))
-              .map(([t, c]) => `<tr class="border-b border-gray-100 last:border-b-0"><td class="px-3 py-2.5 text-sm text-gray-900">${escapeHtml(t)}</td><td class="px-3 py-2.5 text-sm text-gray-700">${c}</td></tr>`)
+              .map(
+                ([t, c]) =>
+                  `<tr class="border-b border-gray-100 last:border-b-0"><td class="px-3 py-2.5 text-sm text-gray-900">${escapeHtml(t)}</td><td class="px-3 py-2.5 text-sm text-gray-700">${c}</td></tr>`
+              )
               .join('')}
           </tbody>
         </table>
