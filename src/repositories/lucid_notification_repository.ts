@@ -9,6 +9,7 @@ import type {
   ListOptions,
 } from '../contracts/repository.ts'
 import type { DeliveryStatus } from '../contracts/delivery.ts'
+import type { InboxMetrics, DeliveryMetrics, DeliveryMetricsFilter } from '../contracts/metrics.ts'
 
 /**
  * Lucid-backed implementation of NotificationRepository.
@@ -264,6 +265,112 @@ export class LucidNotificationRepository implements NotificationRepository {
     const result = await Model.query().where('created_at', '<', threshold.toSQL()).delete()
 
     return Array.isArray(result) ? result.length : 0
+  }
+
+  /**
+   * Get inbox metrics for a notifiable.
+   */
+  async getInboxMetrics(
+    notifiableType: string,
+    notifiableId: string | number
+  ): Promise<InboxMetrics> {
+    const Model = await this.getNotificationModel()
+    const baseQuery = Model.query()
+      .where('notifiable_type', notifiableType)
+      .where('notifiable_id', notifiableId)
+
+    const totalResult = await baseQuery.clone().count('* as total').first()
+    const total = totalResult?.$extras?.total ?? 0
+
+    const unreadResult = await baseQuery.clone().whereNull('read_at').count('* as total').first()
+    const unread = unreadResult?.$extras?.total ?? 0
+
+    const unseenResult = await baseQuery.clone().whereNull('seen_at').count('* as total').first()
+    const unseen = unseenResult?.$extras?.total ?? 0
+
+    const typeRows = await baseQuery.clone().select('type').count('* as cnt').groupBy('type')
+
+    const byType: Record<string, number> = {}
+    for (const row of typeRows) {
+      byType[row.type] = row.$extras.cnt ?? 0
+    }
+
+    return { total, unread, read: total - unread, unseen, byType }
+  }
+
+  /**
+   * Get delivery metrics, optionally filtered.
+   */
+  async getDeliveryMetrics(filter?: DeliveryMetricsFilter): Promise<DeliveryMetrics> {
+    const Model = await this.getDeliveryModel()
+    let query = Model.query()
+
+    if (filter?.notifiableType) {
+      query = query.where('notifiable_type', filter.notifiableType)
+    }
+    if (filter?.notifiableId !== undefined) {
+      query = query.where('notifiable_id', filter.notifiableId)
+    }
+    if (filter?.channel) {
+      query = query.where('channel', filter.channel)
+    }
+    if (filter?.notificationType) {
+      query = query.where('notification_type', filter.notificationType)
+    }
+    if (filter?.status) {
+      query = query.where('status', filter.status)
+    }
+    if (filter?.from) {
+      query = query.where('created_at', '>=', DateTime.fromJSDate(filter.from).toSQL())
+    }
+    if (filter?.to) {
+      query = query.where('created_at', '<=', DateTime.fromJSDate(filter.to).toSQL())
+    }
+
+    const totalResult = await query.clone().count('* as total').first()
+    const total = totalResult?.$extras?.total ?? 0
+
+    const statusRows = await query.clone().select('status').count('* as cnt').groupBy('status')
+    const byStatus: Record<DeliveryStatus, number> = { pending: 0, sent: 0, failed: 0, skipped: 0 }
+    for (const row of statusRows) {
+      byStatus[row.status as DeliveryStatus] = row.$extras.cnt ?? 0
+    }
+
+    const channelRows = await query.clone().select('channel').count('* as cnt').groupBy('channel')
+    const byChannel: Record<string, number> = {}
+    for (const row of channelRows) {
+      byChannel[row.channel] = row.$extras.cnt ?? 0
+    }
+
+    const typeRows = await query
+      .clone()
+      .select('notification_type')
+      .count('* as cnt')
+      .groupBy('notification_type')
+    const byType: Record<string, number> = {}
+    for (const row of typeRows) {
+      byType[row.notificationType] = row.$extras.cnt ?? 0
+    }
+
+    const pivotRows = await query
+      .clone()
+      .select('channel', 'status')
+      .count('* as cnt')
+      .groupBy('channel', 'status')
+    const byChannelAndStatus: Record<string, Record<DeliveryStatus, number>> = {}
+    for (const row of pivotRows) {
+      if (!byChannelAndStatus[row.channel]) {
+        byChannelAndStatus[row.channel] = { pending: 0, sent: 0, failed: 0, skipped: 0 }
+      }
+      byChannelAndStatus[row.channel][row.status as DeliveryStatus] = row.$extras.cnt ?? 0
+    }
+
+    const avgResult = await query.clone().avg('attempts as avg').first()
+    const averageAttempts = avgResult?.$extras?.avg ? Number(avgResult.$extras.avg) : 0
+
+    const failureRate = total > 0 ? byStatus.failed / total : 0
+
+    return { total, byStatus, byChannel, byType, byChannelAndStatus, averageAttempts, failureRate }
   }
 
   /**

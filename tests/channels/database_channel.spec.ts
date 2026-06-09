@@ -166,6 +166,22 @@ test.group('DatabaseChannel', () => {
       findFailedForRetry: async () => [],
       prune: async () => 0,
       pruneDeliveries: async () => 0,
+      getInboxMetrics: async () => ({
+        total: 0,
+        unread: 0,
+        read: 0,
+        unseen: 0,
+        byType: {},
+      }),
+      getDeliveryMetrics: async () => ({
+        total: 0,
+        byStatus: { pending: 0, sent: 0, failed: 0, skipped: 0 },
+        byChannel: {},
+        byType: {},
+        byChannelAndStatus: {},
+        averageAttempts: 0,
+        failureRate: 0,
+      }),
     }
 
     const channel = new DatabaseChannel(failingRepo)

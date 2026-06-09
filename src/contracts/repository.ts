@@ -1,4 +1,5 @@
 import type { DeliveryStatus } from './delivery.ts'
+import type { InboxMetrics, DeliveryMetrics, DeliveryMetricsFilter } from './metrics.ts'
 
 /**
  * Attributes for creating a new database notification.
@@ -128,4 +129,9 @@ export interface NotificationRepository {
   // Cleanup
   prune(olderThan: Date): Promise<number>
   pruneDeliveries(olderThan: Date): Promise<number>
+
+  // Metrics
+  getInboxMetrics(notifiableType: string, notifiableId: string | number): Promise<InboxMetrics>
+
+  getDeliveryMetrics(filter?: DeliveryMetricsFilter): Promise<DeliveryMetrics>
 }

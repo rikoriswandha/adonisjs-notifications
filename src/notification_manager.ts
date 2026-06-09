@@ -10,6 +10,7 @@ import type {
   DeliveryAttemptAttributes,
   DeliveryAttemptRow,
 } from './contracts/repository.ts'
+import type { DeliveryMetricsFilter } from './contracts/metrics.ts'
 import { Notification } from './notification.ts'
 import { NotificationRouter } from './notification_router.ts'
 import { normalizeRecipients } from './utils/notifiable_resolver.ts'
@@ -28,7 +29,6 @@ import {
 } from './contracts/events.ts'
 import type { FakeOptions } from './contracts/testing.ts'
 import { FakeNotificationManager } from './testing/fake_notification_manager.ts'
-
 /**
  * Minimal interface for dispatching a notification job to a queue.
  */
@@ -518,6 +518,40 @@ export class NotificationManager {
       }
     }
     return result
+  }
+
+  /**
+   * Get notification metrics snapshot.
+   */
+  async getMetrics(options?: {
+    notifiableType?: string
+    notifiableId?: string | number
+    filter?: DeliveryMetricsFilter
+  }): Promise<import('./contracts/metrics.ts').NotificationMetrics> {
+    if (!this.repository) {
+      return {
+        inbox: null,
+        deliveries: {
+          total: 0,
+          byStatus: { pending: 0, sent: 0, failed: 0, skipped: 0 },
+          byChannel: {},
+          byType: {},
+          byChannelAndStatus: {},
+          averageAttempts: 0,
+          failureRate: 0,
+        },
+        computedAt: new Date().toISOString(),
+      }
+    }
+
+    const inbox =
+      options?.notifiableType && options?.notifiableId !== undefined
+        ? await this.repository.getInboxMetrics(options.notifiableType, options.notifiableId)
+        : null
+
+    const deliveries = await this.repository.getDeliveryMetrics(options?.filter)
+
+    return { inbox, deliveries, computedAt: new Date().toISOString() }
   }
 
   /**

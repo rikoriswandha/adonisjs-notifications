@@ -24,3 +24,10 @@ export {
   NOTIFICATION_SKIPPED,
 } from './src/contracts/events.ts'
 export { withNotifications } from './src/mixins/with_notifications.ts'
+export { notificationDashboardRoutes } from './src/ui/dashboard/index.ts'
+export type {
+  NotificationMetrics,
+  DeliveryMetrics,
+  InboxMetrics,
+  DeliveryMetricsFilter,
+} from './src/contracts/metrics.ts'

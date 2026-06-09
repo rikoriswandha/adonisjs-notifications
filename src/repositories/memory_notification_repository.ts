@@ -267,6 +267,94 @@ export class MemoryNotificationRepository implements NotificationRepository {
 
     return count
   }
+  /**
+   * Get inbox metrics for a notifiable.
+   */
+  async getInboxMetrics(
+    notifiableType: string,
+    notifiableId: string | number
+  ): Promise<import('../contracts/metrics.ts').InboxMetrics> {
+    const notifications = Array.from(this.notifications.values()).filter(
+      (n) => n.notifiableType === notifiableType && n.notifiableId === notifiableId
+    )
+
+    const total = notifications.length
+    const unread = notifications.filter((n) => n.readAt === null).length
+    const read = total - unread
+    const unseen = notifications.filter((n) => n.seenAt === null).length
+
+    const byType: Record<string, number> = {}
+    for (const n of notifications) {
+      byType[n.type] = (byType[n.type] ?? 0) + 1
+    }
+
+    return { total, unread, read, unseen, byType }
+  }
+
+  /**
+   * Get delivery metrics, optionally filtered.
+   */
+  async getDeliveryMetrics(
+    filter?: import('../contracts/metrics.ts').DeliveryMetricsFilter
+  ): Promise<import('../contracts/metrics.ts').DeliveryMetrics> {
+    let deliveries = Array.from(this.deliveries.values())
+
+    if (filter?.notifiableType) {
+      deliveries = deliveries.filter((d) => d.notifiableType === filter.notifiableType)
+    }
+    if (filter?.notifiableId !== undefined) {
+      deliveries = deliveries.filter((d) => d.notifiableId === filter.notifiableId)
+    }
+    if (filter?.channel) {
+      deliveries = deliveries.filter((d) => d.channel === filter.channel)
+    }
+    if (filter?.notificationType) {
+      deliveries = deliveries.filter((d) => d.notificationType === filter.notificationType)
+    }
+    if (filter?.status) {
+      deliveries = deliveries.filter((d) => d.status === filter.status)
+    }
+    if (filter?.from) {
+      const fromTime = filter.from.getTime()
+      deliveries = deliveries.filter((d) => d.createdAt.getTime() >= fromTime)
+    }
+    if (filter?.to) {
+      const toTime = filter.to.getTime()
+      deliveries = deliveries.filter((d) => d.createdAt.getTime() <= toTime)
+    }
+
+    const total = deliveries.length
+    const byStatus: Record<import('../contracts/delivery.ts').DeliveryStatus, number> = {
+      pending: 0,
+      sent: 0,
+      failed: 0,
+      skipped: 0,
+    }
+    const byChannel: Record<string, number> = {}
+    const byType: Record<string, number> = {}
+    const byChannelAndStatus: Record<
+      string,
+      Record<import('../contracts/delivery.ts').DeliveryStatus, number>
+    > = {}
+    let attemptSum = 0
+
+    for (const d of deliveries) {
+      byStatus[d.status]++
+      byChannel[d.channel] = (byChannel[d.channel] ?? 0) + 1
+      byType[d.notificationType] = (byType[d.notificationType] ?? 0) + 1
+      attemptSum += d.attempts
+
+      if (!byChannelAndStatus[d.channel]) {
+        byChannelAndStatus[d.channel] = { pending: 0, sent: 0, failed: 0, skipped: 0 }
+      }
+      byChannelAndStatus[d.channel][d.status]++
+    }
+
+    const averageAttempts = total > 0 ? attemptSum / total : 0
+    const failureRate = total > 0 ? byStatus.failed / total : 0
+
+    return { total, byStatus, byChannel, byType, byChannelAndStatus, averageAttempts, failureRate }
+  }
 
   /**
    * Clear all data (useful for test cleanup).

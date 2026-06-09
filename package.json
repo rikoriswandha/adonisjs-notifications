@@ -21,7 +21,8 @@
     "./mixins": "./build/src/mixins/main.js",
     "./testing": "./build/src/testing/main.js",
     "./channels/*": "./build/src/channels/*.js",
-    "./jobs/*": "./build/src/jobs/*.js"
+    "./jobs/*": "./build/src/jobs/*.js",
+    "./ui/dashboard": "./build/src/ui/dashboard/index.js"
   },
   "scripts": {
     "copy:templates": "copyfiles \"stubs/**/*.stub\" build",
@@ -120,8 +121,8 @@
       "./src/testing/main.ts",
       "./commands/main.ts",
       "./commands/make_notification.ts",
-      "./commands/notifications_prune.ts",
-      "./commands/notifications_retry_failed.ts"
+      "./commands/notifications_retry_failed.ts",
+      "./src/ui/**/index.ts"
     ],
     "outDir": "./build",
     "clean": true,

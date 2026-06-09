@@ -81,6 +81,10 @@ export async function configure(command: Configure) {
     }
   }
 
+  const enableDashboard = await command.prompt.confirm(
+    'Do you want to enable the notifications dashboard?'
+  )
+
   /**
    * Step 3: Publish config stub
    */
@@ -141,6 +145,18 @@ export async function configure(command: Configure) {
 
   if (queueInstalled) {
     command.logger.log('  • @adonisjs/queue integration ready')
+  }
+
+  if (enableDashboard) {
+    command.logger.log('  • Dashboard enabled — add this to start/routes.ts:')
+    command.logger.log('')
+    command.logger.log(
+      '    import { notificationDashboardRoutes } from "adonisjs-notifications/ui/dashboard"'
+    )
+    command.logger.log('    router.group(() => {')
+    command.logger.log('      notificationDashboardRoutes()')
+    command.logger.log('    }).prefix(\"/notifications/dashboard\")')
+    command.logger.log('')
   }
 
   if (!lucidInstalled) {
