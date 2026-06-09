@@ -27,7 +27,9 @@ export function notificationDashboardRoutes() {
       const metrics = await notifications.getMetrics({ filter })
       const html = createDashboardHtml(metrics, {
         title: 'Notification Metrics',
-        filterQuery: Object.entries(request.qs()).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`).join('&'),
+        filterQuery: Object.entries(request.qs())
+          .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+          .join('&'),
       })
       response.header('Cache-Control', 'no-store')
       return response.type('text/html').send(html)
@@ -47,7 +49,9 @@ export function notificationDashboardRoutes() {
       const html = createDashboardHtml(metrics, {
         title: `Inbox Metrics — ${notifiableType} ${notifiableId}`,
         basePath,
-        filterQuery: Object.entries(request.qs()).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`).join('&'),
+        filterQuery: Object.entries(request.qs())
+          .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+          .join('&'),
       })
       response.header('Cache-Control', 'no-store')
       return response.type('text/html').send(html)
@@ -68,7 +72,7 @@ function buildFilter(query: Record<string, unknown>): DeliveryMetricsFilter {
 
   if (query.from) {
     const fromDate = new Date(String(query.from))
-    if (isNaN(fromDate.getTime())) {
+    if (Number.isNaN(fromDate.getTime())) {
       throw new ValidationError(`Invalid "from" date: ${query.from}`)
     }
     filter.from = fromDate
@@ -76,7 +80,7 @@ function buildFilter(query: Record<string, unknown>): DeliveryMetricsFilter {
 
   if (query.to) {
     const toDate = new Date(String(query.to))
-    if (isNaN(toDate.getTime())) {
+    if (Number.isNaN(toDate.getTime())) {
       throw new ValidationError(`Invalid "to" date: ${query.to}`)
     }
     filter.to = toDate

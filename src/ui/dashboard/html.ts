@@ -25,7 +25,12 @@ export function createDashboardHtml(
   // -- Data prep
   const channels = Object.keys(deliveries.byChannelAndStatus).sort()
   const types = Object.keys(deliveries.byType).sort()
-  const statusOrder: Array<keyof typeof deliveries.byStatus> = ['sent', 'failed', 'pending', 'skipped']
+  const statusOrder: Array<keyof typeof deliveries.byStatus> = [
+    'sent',
+    'failed',
+    'pending',
+    'skipped',
+  ]
 
   const maxTypeVal = Math.max(1, ...types.map((t) => deliveries.byType[t] ?? 0))
 
@@ -767,14 +772,20 @@ export function createDashboardHtml(
           <span class="chart-block-label">Channels</span>
           ${channelDonutSvg}
         </div>
-        ${channelTotals.length > 0 ? `
+        ${
+          channelTotals.length > 0
+            ? `
         <div class="legend">
-          ${channelTotals.map((ch, i) => {
-            const colors = ['#5a7d9a','#7a9aaf','#9ab5c4','#4a6b5a','#8a7d6a','#9a8a7a']
-            return `<span class="legend-item"><span class="legend-swatch" style="background:${colors[i % colors.length]}"></span>${e(ch.name)}</span>`
-          }).join('')}
+          ${channelTotals
+            .map((ch, i) => {
+              const colors = ['#5a7d9a', '#7a9aaf', '#9ab5c4', '#4a6b5a', '#8a7d6a', '#9a8a7a']
+              return `<span class="legend-item"><span class="legend-swatch" style="background:${colors[i % colors.length]}"></span>${e(ch.name)}</span>`
+            })
+            .join('')}
         </div>
-        ` : ''}
+        `
+            : ''
+        }
       </div>
     </section>
 
