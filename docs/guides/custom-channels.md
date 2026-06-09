@@ -5,8 +5,8 @@ You can add custom notification channels beyond the four built-ins.
 ## Channel interface
 
 ```ts
-import type { NotificationChannel } from 'adonisjs-notifications'
-import type { DeliveryContext, DeliveryResult } from 'adonisjs-notifications'
+import type { NotificationChannel } from '@rikology/adonisjs-notifications'
+import type { DeliveryContext, DeliveryResult } from '@rikology/adonisjs-notifications'
 
 export class SmsChannel implements NotificationChannel<string, string> {
   name = 'sms'
@@ -57,7 +57,7 @@ interface DeliveryResult<Result = unknown> {
 ## Registering via config
 
 ```ts
-import { defineConfig, channels } from 'adonisjs-notifications'
+import { defineConfig, channels } from '@rikology/adonisjs-notifications'
 import { SmsChannel } from './channels/sms_channel.js'
 
 export default defineConfig({
@@ -76,7 +76,7 @@ Runtime channel registration is not currently supported via a dedicated API. Opt
 2. **Factory function** — register your channel in the config with a factory that lazily loads the implementation.
 
 ```ts
-import { defineConfig, channels } from 'adonisjs-notifications'
+import { defineConfig, channels } from '@rikology/adonisjs-notifications'
 
 export default defineConfig({
   channels: {
@@ -132,7 +132,7 @@ assert.include(message, ' Track: ')
 
 ```ts
 // channels/push_notification_channel.ts
-import type { NotificationChannel, DeliveryContext, DeliveryResult } from 'adonisjs-notifications'
+import type { NotificationChannel, DeliveryContext, DeliveryResult } from '@rikology/adonisjs-notifications'
 
 interface PushPayload {
   title: string
@@ -180,7 +180,7 @@ export class PushNotificationChannel implements NotificationChannel<PushPayload,
 
 ```ts
 // app/notifications/system_alert.ts
-import { Notification, MailMessage } from 'adonisjs-notifications'
+import { Notification, MailMessage } from '@rikology/adonisjs-notifications'
 
 export default class SystemAlert extends Notification {
   via(notifiable) {

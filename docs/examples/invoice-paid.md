@@ -6,7 +6,7 @@ A notification sent to both mail and database channels when an invoice is paid.
 
 ```ts
 // app/notifications/invoice_paid.ts
-import { Notification, MailMessage } from 'adonisjs-notifications'
+import { Notification, MailMessage } from '@rikology/adonisjs-notifications'
 
 export default class InvoicePaid extends Notification {
   constructor(
@@ -45,7 +45,7 @@ export default class InvoicePaid extends Notification {
 
 ```ts
 // app/controllers/invoices_controller.ts
-import notifications from 'adonisjs-notifications/services/main'
+import notifications from '@rikology/adonisjs-notifications/services/main'
 import InvoicePaid from '#notifications/invoice_paid'
 
 export default class InvoicesController {
@@ -66,7 +66,7 @@ export default class InvoicesController {
 
 ```ts
 // app/services/invoice_service.ts
-import notifications from 'adonisjs-notifications/services/main'
+import notifications from '@rikology/adonisjs-notifications/services/main'
 import InvoicePaid from '#notifications/invoice_paid'
 
 export class InvoiceService {

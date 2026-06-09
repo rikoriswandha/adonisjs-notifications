@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "adonisjs-notifications",
+      "name": "@rikology/adonisjs-notifications",
       "devDependencies": {
         "@adonisjs/assembler": "^8.0.0",
         "@adonisjs/core": "^7.0.1",

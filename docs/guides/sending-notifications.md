@@ -3,7 +3,7 @@
 ## Service import
 
 ```ts
-import notifications from 'adonisjs-notifications/services/main'
+import notifications from '@rikology/adonisjs-notifications/services/main'
 ```
 
 ## send()
@@ -71,13 +71,13 @@ import {
   NOTIFICATION_SENT,
   NOTIFICATION_FAILED,
   NOTIFICATION_SKIPPED,
-} from 'adonisjs-notifications'
+} from '@rikology/adonisjs-notifications'
 ```
 
 Listen in your application:
 ```ts
 import emitter from '@adonisjs/core/services/emitter'
-import { NOTIFICATION_SENT } from 'adonisjs-notifications'
+import { NOTIFICATION_SENT } from '@rikology/adonisjs-notifications'
 
 emitter.on(NOTIFICATION_SENT, (payload) => {
   console.log('Sent:', payload.notification.constructor.name)

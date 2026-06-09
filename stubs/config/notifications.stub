@@ -1,7 +1,7 @@
 {{{
   exports({ to: app.configPath('notifications.ts') })
 }}}
-import { defineConfig, channels } from 'adonisjs-notifications'
+import { defineConfig, channels } from '@rikology/adonisjs-notifications'
 
 export default defineConfig({
   /**

@@ -27,7 +27,7 @@ export default class NotificationProvider {
       const config = this.app.config.get<NotificationConfig>('notifications')
       if (!config) {
         throw new E_NOTIFICATION_CONFIG_INVALID([
-          'Missing "config/notifications.ts". Run "node ace configure adonisjs-notifications"',
+          'Missing "config/notifications.ts". Run "node ace configure @rikology/adonisjs-notifications"',
         ])
       }
       return new NotificationManager(config)

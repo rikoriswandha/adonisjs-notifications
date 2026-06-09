@@ -1,5 +1,5 @@
 {
-  "name": "adonisjs-notifications",
+  "name": "@rikology/adonisjs-notifications",
   "description": "Send notifications through multiple channels with Laravel-inspired ergonomics for AdonisJS v7",
   "version": "0.1.0",
   "engines": {
@@ -12,17 +12,50 @@
     "!build/tests"
   ],
   "exports": {
-    ".": "./build/index.js",
-    "./types": "./build/src/types.js",
-    "./services/main": "./build/services/main.js",
-    "./notification_provider": "./build/providers/notification_provider.js",
-    "./commands": "./build/commands/main.js",
-    "./commands/*": "./build/commands/*.js",
-    "./mixins": "./build/src/mixins/main.js",
-    "./testing": "./build/src/testing/main.js",
-    "./channels/*": "./build/src/channels/*.js",
-    "./jobs/*": "./build/src/jobs/*.js",
-    "./ui/dashboard": "./build/src/ui/dashboard/index.js"
+    ".": {
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    },
+    "./types": {
+      "types": "./build/src/types.d.ts",
+      "default": "./build/src/types.js"
+    },
+    "./services/main": {
+      "types": "./build/services/main.d.ts",
+      "default": "./build/services/main.js"
+    },
+    "./notification_provider": {
+      "types": "./build/providers/notification_provider.d.ts",
+      "default": "./build/providers/notification_provider.js"
+    },
+    "./commands": {
+      "types": "./build/commands/main.d.ts",
+      "default": "./build/commands/main.js"
+    },
+    "./commands/*": {
+      "types": "./build/commands/*.d.ts",
+      "default": "./build/commands/*.js"
+    },
+    "./mixins": {
+      "types": "./build/src/mixins/main.d.ts",
+      "default": "./build/src/mixins/main.js"
+    },
+    "./testing": {
+      "types": "./build/src/testing/main.d.ts",
+      "default": "./build/src/testing/main.js"
+    },
+    "./channels/*": {
+      "types": "./build/src/channels/*.d.ts",
+      "default": "./build/src/channels/*.js"
+    },
+    "./jobs/*": {
+      "types": "./build/src/jobs/*.d.ts",
+      "default": "./build/src/jobs/*.js"
+    },
+    "./ui/dashboard": {
+      "types": "./build/src/ui/dashboard/index.d.ts",
+      "default": "./build/src/ui/dashboard/index.js"
+    }
   },
   "scripts": {
     "copy:templates": "copyfiles \"stubs/**/*.stub\" build",

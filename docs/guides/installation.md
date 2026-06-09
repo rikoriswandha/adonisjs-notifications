@@ -3,8 +3,8 @@
 ## Quick install
 
 ```bash
-npm i adonisjs-notifications
-node ace configure adonisjs-notifications
+npm i @rikology/adonisjs-notifications
+node ace configure @rikology/adonisjs-notifications
 ```
 
 The configure command will:
@@ -20,10 +20,10 @@ Add to adonisrc.ts:
 ```ts
 export default defineConfig({
   providers: [
-    () => import('adonisjs-notifications/notification_provider'),
+    () => import('@rikology/adonisjs-notifications/notification_provider'),
   ],
   commands: [
-    () => import('adonisjs-notifications/commands'),
+    () => import('@rikology/adonisjs-notifications/commands'),
   ],
 })
 ```

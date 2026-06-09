@@ -10,7 +10,7 @@ A support form where visitors leave their email and phone for follow-up.
 
 ```ts
 // app/notifications/support_reply.ts
-import { Notification, MailMessage } from 'adonisjs-notifications'
+import { Notification, MailMessage } from '@rikology/adonisjs-notifications'
 
 export default class SupportReply extends Notification {
   constructor(private ticketId: number, private message: string) {
@@ -35,7 +35,7 @@ export default class SupportReply extends Notification {
 
 ```ts
 // app/controllers/support_controller.ts
-import notifications from 'adonisjs-notifications/services/main'
+import notifications from '@rikology/adonisjs-notifications/services/main'
 import SupportReply from '#notifications/support_reply'
 
 export default class SupportController {

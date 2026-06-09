@@ -17,7 +17,7 @@ Generated file at `app/notifications/InvoicePaid.ts`.
 ## Notification class
 
 ```ts
-import { Notification, MailMessage } from 'adonisjs-notifications'
+import { Notification, MailMessage } from '@rikology/adonisjs-notifications'
 
 export default class InvoicePaid extends Notification {
   public shouldQueue = true

@@ -94,7 +94,7 @@ The library should help applications send one notification through many delivery
 ### Service Import
 
 ```ts
-import notifications from 'adonisjs-notifications/services/main'
+import notifications from '@rikology/adonisjs-notifications/services/main'
 
 await notifications.send(user, new InvoicePaid(invoice))
 await notifications.send([user, admin], new InvoicePaid(invoice))
@@ -106,7 +106,7 @@ await notifications.sendNow(user, new InvoicePaid(invoice))
 ```ts
 import { compose } from '@adonisjs/core/helpers'
 import { BaseModel, column } from '@adonisjs/lucid/orm'
-import { Notifies } from 'adonisjs-notifications/mixins'
+import { Notifies } from '@rikology/adonisjs-notifications/mixins'
 
 export default class User extends compose(BaseModel, Notifies) {
   @column()
@@ -135,7 +135,7 @@ await notifications
 ### Notification Class
 
 ```ts
-import { Notification, MailMessage } from 'adonisjs-notifications'
+import { Notification, MailMessage } from '@rikology/adonisjs-notifications'
 
 export default class InvoicePaid extends Notification {
   public shouldQueue = true
@@ -320,7 +320,7 @@ Recommended indexes:
 ## Configuration
 
 ```ts
-import { defineConfig, channels } from 'adonisjs-notifications'
+import { defineConfig, channels } from '@rikology/adonisjs-notifications'
 
 export default defineConfig({
   defaultQueue: 'notifications',
@@ -405,7 +405,7 @@ The configure hook should:
 Suggested interactive flags:
 
 ```txt
-node ace configure adonisjs-notifications --database --mail --queue
+node ace configure @rikology/adonisjs-notifications --database --mail --queue
 ```
 
 ## Service Provider Lifecycle
@@ -544,7 +544,7 @@ await user.markNotificationsAsRead()
 Testing must be a first-class feature.
 
 ```ts
-import notifications from 'adonisjs-notifications/services/main'
+import notifications from '@rikology/adonisjs-notifications/services/main'
 
 notifications.fake()
 

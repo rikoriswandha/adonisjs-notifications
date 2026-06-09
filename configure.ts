@@ -123,14 +123,14 @@ export async function configure(command: Configure) {
    */
   await codemods.updateRcFile((rcFile) => {
     rcFile
-      .addProvider('adonisjs-notifications/notification_provider')
-      .addCommand('adonisjs-notifications/commands')
+      .addProvider('@rikology/adonisjs-notifications/notification_provider')
+      .addCommand('@rikology/adonisjs-notifications/commands')
   })
 
   /**
    * Step 6: Log summary
    */
-  command.logger.success('adonisjs-notifications configured successfully')
+  command.logger.success('@rikology/adonisjs-notifications configured successfully')
 
   command.logger.log('')
   command.logger.log('Channels: mail, database, log, null')
@@ -151,11 +151,11 @@ export async function configure(command: Configure) {
     command.logger.log('  • Dashboard enabled — add this to start/routes.ts:')
     command.logger.log('')
     command.logger.log(
-      '    import { notificationDashboardRoutes } from "adonisjs-notifications/ui/dashboard"'
+      '    import { notificationDashboardRoutes } from "@rikology/adonisjs-notifications/ui/dashboard"'
     )
     command.logger.log('    router.group(() => {')
     command.logger.log('      notificationDashboardRoutes()')
-    command.logger.log('    }).prefix(\"/notifications/dashboard\")')
+    command.logger.log('    }).prefix("/notifications/dashboard")')
     command.logger.log('')
   }
 

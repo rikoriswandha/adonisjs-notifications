@@ -5,7 +5,7 @@ The package includes a test fake that intercepts notifications without actually 
 ## Setup
 
 ```ts
-import notifications from 'adonisjs-notifications/services/main'
+import notifications from '@rikology/adonisjs-notifications/services/main'
 
 test('user receives welcome email', async ({ assert }) => {
   const fake = notifications.fake()
@@ -123,7 +123,7 @@ notifications.restore()
 In tests without a real database, use `MemoryNotificationRepository`:
 
 ```ts
-import { MemoryNotificationRepository } from 'adonisjs-notifications'
+import { MemoryNotificationRepository } from '@rikology/adonisjs-notifications'
 
 const repo = new MemoryNotificationRepository()
 
@@ -136,7 +136,7 @@ assert.equal(rows.length, 1)
 
 ```ts
 import { test } from '@japa/runner'
-import notifications from 'adonisjs-notifications/services/main'
+import notifications from '@rikology/adonisjs-notifications/services/main'
 import WelcomeNotification from '#notifications/welcome'
 
 test.group('notifications', (group) => {

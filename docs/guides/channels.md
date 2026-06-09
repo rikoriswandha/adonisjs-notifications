@@ -10,7 +10,7 @@ Requires: `@adonisjs/mail`
 Sends email via AdonisJS Mail. Expects `toMail()` to return a `MailMessage` or `MailMessageOptions`.
 
 ```ts
-import { channels } from 'adonisjs-notifications'
+import { channels } from '@rikology/adonisjs-notifications'
 
 channels: {
   mail: channels.mail(),
@@ -32,7 +32,7 @@ Requires: `@adonisjs/lucid`
 Stores the `toDatabase()` payload as JSON in the `notifications` table.
 
 ```ts
-import { channels } from 'adonisjs-notifications'
+import { channels } from '@rikology/adonisjs-notifications'
 
 channels: {
   database: channels.database(),
@@ -53,7 +53,7 @@ Requires: nothing
 Writes structured logs via AdonisJS Pino logger.
 
 ```ts
-import { channels } from 'adonisjs-notifications'
+import { channels } from '@rikology/adonisjs-notifications'
 
 channels: {
   log: channels.log(),
@@ -74,7 +74,7 @@ Requires: nothing
 No-op delivery, useful for testing.
 
 ```ts
-import { channels } from 'adonisjs-notifications'
+import { channels } from '@rikology/adonisjs-notifications'
 
 channels: {
   null: channels.null(),

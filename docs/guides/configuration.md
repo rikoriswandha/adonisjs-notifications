@@ -1,9 +1,9 @@
 # Configuration
 
-The configuration file `config/notifications.ts` is created by `node ace configure adonisjs-notifications`.
+The configuration file `config/notifications.ts` is created by `node ace configure @rikology/adonisjs-notifications`.
 
 ```ts
-import { defineConfig, channels } from 'adonisjs-notifications'
+import { defineConfig, channels } from '@rikology/adonisjs-notifications'
 
 export default defineConfig({
   channels: {

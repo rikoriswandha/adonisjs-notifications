@@ -62,7 +62,7 @@ export interface MailChannelOptions {
  * @example
  * ```ts
  * // In config/notifications.ts
- * import { channels } from 'adonisjs-notifications/channels'
+ * import { channels } from '@rikology/adonisjs-notifications/channels'
  *
  * export default defineConfig({
  *   channels: {

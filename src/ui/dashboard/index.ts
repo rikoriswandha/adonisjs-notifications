@@ -1,7 +1,7 @@
 import router from '@adonisjs/core/services/router'
 import app from '@adonisjs/core/services/app'
-import { createDashboardHtml } from './html.ts'
 import type { DeliveryMetricsFilter } from '../../contracts/metrics.ts'
+import { createDashboardHtml } from './html.ts'
 
 export function notificationDashboardRoutes() {
   return router.group(() => {

@@ -54,7 +54,7 @@ export type NotifiesClass<Model extends NormalizeConstructor<typeof BaseModel>> 
  * ```ts
  * import { compose } from '@adonisjs/core/helpers'
  * import { BaseModel, column } from '@adonisjs/lucid/orm'
- * import { withNotifications } from 'adonisjs-notifications/mixins'
+ * import { withNotifications } from '@rikology/adonisjs-notifications/mixins'
  *
  * export default class User extends compose(BaseModel, withNotifications()) {
  *   @column({ isPrimary: true })
@@ -145,7 +145,7 @@ export function withNotifications() {
  * Deferred until app boot to avoid circular imports.
  */
 async function getNotificationManager(): Promise<NotificationManager> {
-  const { default: notifications } = await import('adonisjs-notifications/services/main')
+  const { default: notifications } = await import('@rikology/adonisjs-notifications/services/main')
   return notifications
 }
 

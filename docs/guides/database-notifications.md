@@ -9,7 +9,7 @@ Add the mixin to your Lucid model:
 ```ts
 import { compose } from '@adonisjs/core/helpers'
 import { BaseModel, column } from '@adonisjs/lucid/orm'
-import { withNotifications } from 'adonisjs-notifications/mixins'
+import { withNotifications } from '@rikology/adonisjs-notifications/mixins'
 
 export default class User extends compose(BaseModel, withNotifications()) {
   @column({ isPrimary: true })
@@ -23,7 +23,7 @@ export default class User extends compose(BaseModel, withNotifications()) {
 ## Sending to database
 
 ```ts
-import { Notification } from 'adonisjs-notifications'
+import { Notification } from '@rikology/adonisjs-notifications'
 
 export default class WelcomeNotification extends Notification {
   via(notifiable) {
@@ -80,14 +80,14 @@ The package uses a repository pattern for database operations.
 **MemoryNotificationRepository** (testing) — in-memory, non-persistent.
 
 ```ts
-import { MemoryNotificationRepository } from 'adonisjs-notifications'
+import { MemoryNotificationRepository } from '@rikology/adonisjs-notifications'
 
 const repo = new MemoryNotificationRepository()
 ```
 
 ## Migrations
 
-When you run `node ace configure adonisjs-notifications`, two migration stubs are published:
+When you run `node ace configure @rikology/adonisjs-notifications`, two migration stubs are published:
 
 - `database/migrations/xxx_create_notifications_table.ts`
 - `database/migrations/xxx_create_notification_deliveries_table.ts`

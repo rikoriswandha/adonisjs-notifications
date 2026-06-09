@@ -6,7 +6,7 @@ A mail notification that is dispatched to the queue for background delivery.
 
 ```ts
 // app/notifications/weekly_digest.ts
-import { Notification, MailMessage } from 'adonisjs-notifications'
+import { Notification, MailMessage } from '@rikology/adonisjs-notifications'
 
 export default class WeeklyDigest extends Notification {
   public shouldQueue = true
@@ -50,7 +50,7 @@ export default class WeeklyDigest extends Notification {
 ```ts
 // commands/send_weekly_digest.ts
 import { BaseCommand } from '@adonisjs/core/ace'
-import notifications from 'adonisjs-notifications/services/main'
+import notifications from '@rikology/adonisjs-notifications/services/main'
 import WeeklyDigest from '#notifications/weekly_digest'
 
 export default class SendWeeklyDigest extends BaseCommand {
