@@ -39,7 +39,7 @@
     "version": "npm run build",
     "prepublishOnly": "npm run build"
   },
-  "documentation": "https://github.com/your-org/adonisjs-notifications#readme",
+  "documentation": "https://github.com/rikoriswandha/adonisjs-notifications#readme",
   "keywords": [
     "adonisjs",
     "adonisjs-package",
@@ -111,8 +111,17 @@
       "./providers/notification_provider.ts",
       "./src/types.ts",
       "./src/channels/index.ts",
+      "./src/channels/database_channel.ts",
+      "./src/channels/log_channel.ts",
+      "./src/channels/mail_channel.ts",
+      "./src/channels/null_channel.ts",
       "./src/mixins/main.ts",
-      "./src/jobs/send_notification_job.ts"
+      "./src/jobs/send_notification_job.ts",
+      "./src/testing/main.ts",
+      "./commands/main.ts",
+      "./commands/make_notification.ts",
+      "./commands/notifications_prune.ts",
+      "./commands/notifications_retry_failed.ts"
     ],
     "outDir": "./build",
     "clean": true,
