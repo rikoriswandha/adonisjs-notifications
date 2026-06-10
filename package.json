@@ -6,6 +6,8 @@
     "node": ">=24.0.0"
   },
   "type": "module",
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
   "files": [
     "build",
     "!build/bin",
@@ -96,6 +98,7 @@
     "@adonisjs/mail": "^4.0.0",
     "@adonisjs/prettier-config": "^1.4.5",
     "@adonisjs/tsconfig": "^2.0.0",
+    "@japa/api-client": "^3.2.1",
     "@japa/assert": "^4.2.0",
     "@japa/runner": "^5.3.0",
     "@poppinss/ts-exec": "^1.4.4",
@@ -164,7 +167,10 @@
     "dts": false,
     "treeshake": false,
     "sourcemaps": false,
-    "target": "esnext"
+    "target": "esnext",
+    "deps": {
+      "neverBundle": ["@rikology/adonisjs-notifications/services/main"]
+    }
   },
   "release-it": {
     "git": {
