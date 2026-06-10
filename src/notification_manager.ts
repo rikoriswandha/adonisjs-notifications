@@ -85,6 +85,12 @@ export class NotificationManager {
   setRepository(repository: NotificationRepository): void {
     this.repository = repository
   }
+  /**
+   * Get the notification repository.
+   */
+  getRepository(): NotificationRepository | undefined {
+    return this.repository
+  }
 
   /**
    * Expose config for queue job deserialization.

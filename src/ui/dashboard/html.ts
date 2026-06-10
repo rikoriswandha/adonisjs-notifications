@@ -441,8 +441,8 @@ ${pageBodyOpen(hxHeadersAttr)}
         </div>
       </header>
 
-      <section class="bg-white dark:bg-sand-900 border border-black/[0.06] dark:border-white/[0.06] rounded-md mb-5 overflow-hidden" id="metrics-panel" aria-labelledby="overview-heading" hx-get="/" hx-trigger="every 30s" hx-target="#metrics-panel" hx-swap="innerHTML">
-        <form class="filter-form flex flex-wrap items-end gap-2.5 px-4 py-3.5 border-b border-black/[0.06] dark:border-white/[0.06]" id="filterForm" method="get" action="" hx-get="/" hx-target="#main" hx-push-url="true">
+      <section class="bg-white dark:bg-sand-900 border border-black/[0.06] dark:border-white/[0.06] rounded-md mb-5 overflow-hidden" id="metrics-panel" aria-labelledby="overview-heading" hx-get="${basePath || '/'}" hx-trigger="every 30s" hx-target="#metrics-panel" hx-swap="innerHTML">
+        <form class="filter-form flex flex-wrap items-end gap-2.5 px-4 py-3.5 border-b border-black/[0.06] dark:border-white/[0.06]" id="filterForm" method="get" action="${basePath || '/'}" hx-get="${basePath || '/'}" hx-target="#main" hx-push-url="true">
           <div class="flex flex-col gap-0.5">
             <label for="f-channel" class="text-[11px] font-semibold text-sand-500 dark:text-sand-550 uppercase tracking-wider">Channel</label>
             <select id="f-channel" name="channel" class="px-2 py-1 border border-black/[0.12] dark:border-white/[0.12] rounded-md bg-white dark:bg-sand-900 text-sand-900 dark:text-sand-150 text-[13px] min-w-[120px] focus:outline-none focus:ring-2 focus:ring-dust">
@@ -472,7 +472,7 @@ ${pageBodyOpen(hxHeadersAttr)}
             <label for="f-to" class="text-[11px] font-semibold text-sand-500 dark:text-sand-550 uppercase tracking-wider">To</label>
             <input type="date" id="f-to" name="to" value="${e(currentQuery.to)}" class="px-2 py-1 border border-black/[0.12] dark:border-white/[0.12] rounded-md bg-white dark:bg-sand-900 text-sand-900 dark:text-sand-150 text-[13px] min-w-[120px] focus:outline-none focus:ring-2 focus:ring-dust">
           </div>
-          <div class="flex flex-col gap-0.5">
+          <div class="flex items-end gap-2">
             <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-dust border border-dust text-white text-xs font-medium cursor-pointer transition-colors duration-150 ease-out hover:bg-dust-hover">Apply</button>
             <button type="button" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md border border-black/[0.12] dark:border-white/[0.12] bg-white dark:bg-sand-900 text-sand-600 dark:text-sand-400 text-xs font-medium cursor-pointer transition-colors duration-150 ease-out hover:bg-sand-50 dark:hover:bg-sand-800" id="clearFilters">Clear</button>
           </div>
@@ -897,6 +897,7 @@ export function createMetricsFragmentHtml(
   options?: DashboardOptions
 ): string {
   const filterQuery = options?.filterQuery ?? ''
+  const basePath = options?.basePath ?? ''
   const { inbox, deliveries } = metrics
 
   // -- Data prep
@@ -1079,8 +1080,8 @@ export function createMetricsFragmentHtml(
   })()
 
   return `
-<section class="bg-white dark:bg-sand-900 border border-black/[0.06] dark:border-white/[0.06] rounded-md mb-5 overflow-hidden" id="metrics-panel" aria-labelledby="overview-heading" hx-get="/" hx-trigger="every 30s" hx-target="#metrics-panel" hx-swap="innerHTML">
-  <form class="filter-form flex flex-wrap items-end gap-2.5 px-4 py-3.5 border-b border-black/[0.06] dark:border-white/[0.06]" id="filterForm" method="get" action="" hx-get="/" hx-target="#main" hx-push-url="true">
+<section class="bg-white dark:bg-sand-900 border border-black/[0.06] dark:border-white/[0.06] rounded-md mb-5 overflow-hidden" id="metrics-panel" aria-labelledby="overview-heading" hx-get="${basePath || '/'}" hx-trigger="every 30s" hx-target="#metrics-panel" hx-swap="innerHTML">
+  <form class="filter-form flex flex-wrap items-end gap-2.5 px-4 py-3.5 border-b border-black/[0.06] dark:border-white/[0.06]" id="filterForm" method="get" action="${basePath || '/'}" hx-get="${basePath || '/'}" hx-target="#main" hx-push-url="true">
     <div class="flex flex-col gap-0.5">
       <label for="f-channel" class="text-[11px] font-semibold text-sand-500 dark:text-sand-550 uppercase tracking-wider">Channel</label>
       <select id="f-channel" name="channel" class="px-2 py-1 border border-black/[0.12] dark:border-white/[0.12] rounded-md bg-white dark:bg-sand-900 text-sand-900 dark:text-sand-150 text-[13px] min-w-[120px] focus:outline-none focus:ring-2 focus:ring-dust">
@@ -1110,7 +1111,7 @@ export function createMetricsFragmentHtml(
       <label for="f-to" class="text-[11px] font-semibold text-sand-500 dark:text-sand-550 uppercase tracking-wider">To</label>
       <input type="date" id="f-to" name="to" value="${e(currentQuery.to)}" class="px-2 py-1 border border-black/[0.12] dark:border-white/[0.12] rounded-md bg-white dark:bg-sand-900 text-sand-900 dark:text-sand-150 text-[13px] min-w-[120px] focus:outline-none focus:ring-2 focus:ring-dust">
     </div>
-    <div class="flex flex-col gap-0.5">
+    <div class="flex items-end gap-2">
       <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-dust border border-dust text-white text-xs font-medium cursor-pointer transition-colors duration-150 ease-out hover:bg-dust-hover">Apply</button>
       <button type="button" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md border border-black/[0.12] dark:border-white/[0.12] bg-white dark:bg-sand-900 text-sand-600 dark:text-sand-400 text-xs font-medium cursor-pointer transition-colors duration-150 ease-out hover:bg-sand-50 dark:hover:bg-sand-800" id="clearFilters">Clear</button>
     </div>

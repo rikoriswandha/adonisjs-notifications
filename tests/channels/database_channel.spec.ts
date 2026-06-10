@@ -142,6 +142,7 @@ test.group('DatabaseChannel', () => {
       markAsUnread: async () => {},
       markAllAsRead: async () => {},
       markAsSeen: async () => {},
+      delete: async () => {},
       unreadCount: async () => 0,
       storeDelivery: async () => ({
         id: '',

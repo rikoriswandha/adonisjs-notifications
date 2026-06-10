@@ -1,7 +1,7 @@
 {
   "name": "@rikology/adonisjs-notifications",
   "description": "Send notifications through multiple channels with Laravel-inspired ergonomics for AdonisJS v7",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "engines": {
     "node": ">=24.0.0"
   },
@@ -169,7 +169,9 @@
     "sourcemaps": false,
     "target": "esnext",
     "deps": {
-      "neverBundle": ["@rikology/adonisjs-notifications/services/main"]
+      "neverBundle": [
+        "@rikology/adonisjs-notifications/services/main"
+      ]
     }
   },
   "release-it": {

@@ -240,15 +240,19 @@ export class MemoryNotificationRepository implements NotificationRepository {
   async prune(olderThan: Date): Promise<number> {
     const threshold = olderThan.getTime()
     let count = 0
-
     for (const [id, notification] of this.notifications.entries()) {
       if (notification.createdAt.getTime() < threshold) {
         this.notifications.delete(id)
         count++
       }
     }
-
     return count
+  }
+  /**
+   * Delete a notification by ID.
+   */
+  async delete(id: string): Promise<void> {
+    this.notifications.delete(id)
   }
 
   /**

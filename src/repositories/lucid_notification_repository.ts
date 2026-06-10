@@ -249,21 +249,26 @@ export class LucidNotificationRepository implements NotificationRepository {
   async prune(olderThan: Date): Promise<number> {
     const Model = await this.getNotificationModel()
     const threshold = DateTime.fromJSDate(olderThan)
-
     const result = await Model.query().where('created_at', '<', threshold.toSQL()).delete()
-
     return Array.isArray(result) ? result.length : 0
   }
-
+  /**
+   * Delete a notification by ID.
+   */
+  async delete(id: string): Promise<void> {
+    const Model = await this.getNotificationModel()
+    const record = await Model.find(id)
+    if (record) {
+      await record.delete()
+    }
+  }
   /**
    * Prune old delivery records.
    */
   async pruneDeliveries(olderThan: Date): Promise<number> {
     const Model = await this.getDeliveryModel()
     const threshold = DateTime.fromJSDate(olderThan)
-
     const result = await Model.query().where('created_at', '<', threshold.toSQL()).delete()
-
     return Array.isArray(result) ? result.length : 0
   }
 

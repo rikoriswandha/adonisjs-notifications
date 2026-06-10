@@ -129,6 +129,7 @@ export interface NotificationRepository {
   // Cleanup
   prune(olderThan: Date): Promise<number>
   pruneDeliveries(olderThan: Date): Promise<number>
+  delete(id: string): Promise<void>
 
   // Metrics
   getInboxMetrics(notifiableType: string, notifiableId: string | number): Promise<InboxMetrics>
