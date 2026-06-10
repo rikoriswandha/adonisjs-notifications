@@ -895,7 +895,7 @@ export function createMetricsFragmentHtml(
 ): string {
   const filterQuery = options?.filterQuery ?? ''
   const basePath = options?.basePath ?? ''
-  const { inbox, deliveries } = metrics
+  const { deliveries } = metrics
 
   // -- Data prep
   const channels = Object.keys(deliveries.byChannelAndStatus).sort()
@@ -907,8 +907,6 @@ export function createMetricsFragmentHtml(
     'pending',
     'skipped',
   ]
-
-  const maxTypeVal = Math.max(1, ...types.map((t) => deliveries.byType[t] ?? 0))
 
   const channelTotals = channels.map((ch) => ({
     name: ch,
@@ -924,81 +922,6 @@ export function createMetricsFragmentHtml(
       <div class="text-[11px] text-sand-500 dark:text-sand-550 uppercase tracking-wider mt-0.5">${label}</div>
     </div>
   `
-
-  // Table header
-  const tableHead = (headers: string[]) => `
-    <thead><tr>
-      ${headers.map((h) => `<th class="text-left px-3.5 py-2 text-[11px] font-semibold text-sand-500 dark:text-sand-550 uppercase tracking-wider bg-sand-50 dark:bg-sand-900 border-b border-black/[0.06] dark:border-white/[0.06] whitespace-nowrap cursor-pointer select-none sortable">${e(h)}</th>`).join('')}
-    </tr></thead>
-  `
-
-  // Channel x status rows
-  const deliveryRows = channels
-    .map((ch) => {
-      const totals = deliveries.byChannelAndStatus[ch]
-      const total = Object.values(totals).reduce((a, b) => (a as number) + (b as number), 0)
-      return `
-        <tr class="hover:bg-sand-50 dark:hover:bg-sand-900">
-          <td class="px-3.5 py-2 border-b border-black/[0.06] dark:border-white/[0.06] align-middle whitespace-nowrap">
-            <span class="inline-block px-1.5 py-0.5 rounded text-xs font-medium bg-sand-100 dark:bg-sand-800 text-sand-600 dark:text-sand-400">${e(ch)}</span>
-          </td>
-          <td class="px-3.5 py-2 border-b border-black/[0.06] dark:border-white/[0.06] align-middle text-right tabular-nums">${formatNum(total as number)}</td>
-          ${statusOrder.map((s) => `<td class="px-3.5 py-2 border-b border-black/[0.06] dark:border-white/[0.06] align-middle text-right tabular-nums">${formatNum(totals[s] ?? 0)}</td>`).join('')}
-        </tr>
-      `
-    })
-    .join('')
-
-  // Type rows
-  const typeRows = types
-    .map((t) => {
-      const val = deliveries.byType[t] ?? 0
-      const pct = Math.round((val / maxTypeVal) * 100)
-      return `
-        <tr class="hover:bg-sand-50 dark:hover:bg-sand-900">
-          <td class="px-3.5 py-2 border-b border-black/[0.06] dark:border-white/[0.06] align-middle">
-            <code class="font-mono text-xs px-1 py-0.5 rounded bg-sand-100 dark:bg-sand-800 text-sand-700 dark:text-sand-400">${e(t)}</code>
-          </td>
-          <td class="px-3.5 py-2 border-b border-black/[0.06] dark:border-white/[0.06] align-middle text-right tabular-nums">${formatNum(val)}</td>
-          <td class="px-3.5 py-2 border-b border-black/[0.06] dark:border-white/[0.06] align-middle" style="width:50%">
-            <div class="w-full h-1.5 bg-sand-100 dark:bg-sand-800 rounded-full overflow-hidden">
-              <div class="h-full bg-dust rounded-full bar-fill" style="width:${pct}%"></div>
-            </div>
-          </td>
-        </tr>
-      `
-    })
-    .join('')
-
-  // Inbox section
-  const inboxSection = inbox
-    ? `
-    <section class="bg-white dark:bg-sand-900 border border-black/[0.06] dark:border-white/[0.06] rounded-md mb-5 overflow-hidden" aria-labelledby="inbox-heading">
-      <div class="flex items-center justify-between px-4 pt-3.5">
-        <h2 id="inbox-heading" class="text-sm font-semibold m-0">Inbox Metrics</h2>
-      </div>
-      <div class="grid grid-cols-2 gap-2 p-4">
-        ${card('Total', formatNum(inbox.total))}
-        ${card('Unread', formatNum(inbox.unread))}
-        ${card('Read', formatNum(inbox.read))}
-        ${card('Unseen', formatNum(inbox.unseen))}
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full border-collapse text-[13px]">
-          ${tableHead(['Type', 'Count'])}
-          <tbody>
-            ${Object.entries(inbox.byType)
-              .map(
-                ([type, count]) =>
-                  `<tr class="hover:bg-sand-50 dark:hover:bg-sand-900"><td class="px-3.5 py-2 border-b border-black/[0.06] dark:border-white/[0.06] align-middle"><code class="font-mono text-xs px-1 py-0.5 rounded bg-sand-100 dark:bg-sand-800 text-sand-700 dark:text-sand-400">${e(type)}</code></td><td class="px-3.5 py-2 border-b border-black/[0.06] dark:border-white/[0.06] align-middle text-right tabular-nums">${formatNum(count)}</td></tr>`
-              )
-              .join('')}
-          </tbody>
-        </table>
-      </div>
-    </section>
-    `
-    : ''
 
   // Status bar chart (SVG)
   const statusBarSvg = (() => {
