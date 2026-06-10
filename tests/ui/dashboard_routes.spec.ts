@@ -81,8 +81,8 @@ test.group('Dashboard Routes - GET /', () => {
 
     const body = getResponseBody(ctx)
     assert.notInclude(body, '<!doctype html>')
-    assert.include(body, 'id="metrics-panel"')
     assert.include(body, 'filter-form')
+    assert.include(body, 'Total Deliveries')
   })
 })
 
