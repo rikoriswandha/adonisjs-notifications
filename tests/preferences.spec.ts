@@ -179,6 +179,70 @@ test.group('Preferences - Channel Filtering', () => {
   })
 })
 
+test.group('Preferences - Partial resolver output', () => {
+  test('empty preferences object lets all channels pass', async ({ assert }) => {
+    const mailChannel = new MockChannel()
+    const smsChannel = new MockChannel()
+
+    const resolver = createResolver({})
+    const config = createConfig({ mail: () => mailChannel, sms: () => smsChannel }, { resolver })
+    const manager = new NotificationManager(config)
+
+    await manager.send({ id: 1, email: 'user@example.com', phone: '+123' }, new TestNotification())
+
+    assert.lengthOf(mailChannel.calls, 1)
+    assert.lengthOf(smsChannel.calls, 1)
+  })
+
+  test('preferences with only criticalBypass lets all channels pass', async ({ assert }) => {
+    const mailChannel = new MockChannel()
+
+    const resolver = createResolver({ criticalBypass: true })
+    const config = createConfig({ mail: () => mailChannel }, { resolver })
+    const manager = new NotificationManager(config)
+
+    await manager.send({ id: 1, email: 'user@example.com' }, new CategorizedNotification('transactional'))
+
+    assert.lengthOf(mailChannel.calls, 1)
+  })
+
+  test('preferences with only quietHours still filters channels correctly', async ({ assert }) => {
+    const mailChannel = new MockChannel()
+    const smsChannel = new MockChannel()
+
+    const resolver = createResolver({
+      quietHours: { timezone: 'UTC', start: '09:00', end: '17:00' },
+    })
+    const config = createConfig(
+      { mail: () => mailChannel, sms: () => smsChannel },
+      { resolver },
+      { enabled: true, bypassPriorities: [] }
+    )
+    const manager = new NotificationManager(config)
+
+    const { mockNow, restore } = mockDateTo('2026-01-15T12:00:00Z')
+    await manager.send({ id: 1, email: 'user@example.com', phone: '+123' }, new TestNotification())
+    restore()
+
+    assert.lengthOf(mailChannel.calls, 0)
+    assert.lengthOf(smsChannel.calls, 0)
+  })
+
+  test('preferences with only enabledChannels applies whitelist', async ({ assert }) => {
+    const mailChannel = new MockChannel()
+    const smsChannel = new MockChannel()
+
+    const resolver = createResolver({ enabledChannels: ['mail'] })
+    const config = createConfig({ mail: () => mailChannel, sms: () => smsChannel }, { resolver })
+    const manager = new NotificationManager(config)
+
+    await manager.send({ id: 1, email: 'user@example.com', phone: '+123' }, new TestNotification())
+
+    assert.lengthOf(mailChannel.calls, 1)
+    assert.lengthOf(smsChannel.calls, 0)
+  })
+})
+
 test.group('Preferences - Category Filtering', () => {
   test('disabled category skips all channels', async ({ assert }) => {
     const mailChannel = new MockChannel()
