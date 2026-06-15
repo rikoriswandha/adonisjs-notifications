@@ -1,0 +1,121 @@
+{
+  "commands": [
+    {
+      "commandName": "make:notification",
+      "description": "Make a new notification class",
+      "help": "",
+      "namespace": "make",
+      "aliases": [],
+      "flags": [
+        {
+          "name": "queued",
+          "flagName": "queued",
+          "required": false,
+          "type": "boolean",
+          "description": "Generate with queue support (shouldQueue = true)",
+          "alias": "q"
+        },
+        {
+          "name": "mail",
+          "flagName": "mail",
+          "required": false,
+          "type": "boolean",
+          "description": "Generate toMail() method stub",
+          "alias": "m"
+        },
+        {
+          "name": "database",
+          "flagName": "database",
+          "required": false,
+          "type": "boolean",
+          "description": "Generate toDatabase() method stub",
+          "alias": "d"
+        },
+        {
+          "name": "contentsFrom",
+          "flagName": "contents-from",
+          "required": false,
+          "type": "string",
+          "description": "Use the contents of the given file as the generated output"
+        },
+        {
+          "name": "force",
+          "flagName": "force",
+          "required": false,
+          "type": "boolean",
+          "description": "Forcefully overwrite existing files"
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "argumentName": "name",
+          "required": true,
+          "description": "Name of the notification class",
+          "type": "string"
+        }
+      ],
+      "options": {
+        "allowUnknownFlags": true
+      },
+      "filePath": "make_notification.js"
+    },
+    {
+      "commandName": "notifications:prune",
+      "description": "Prune old notification and delivery records from the database",
+      "help": "",
+      "namespace": "notifications",
+      "aliases": [],
+      "flags": [
+        {
+          "name": "olderThan",
+          "flagName": "older-than",
+          "required": false,
+          "type": "string",
+          "description": "Prune notifications older than this duration (e.g. 90d, 30d)"
+        },
+        {
+          "name": "failedOlderThan",
+          "flagName": "failed-older-than",
+          "required": false,
+          "type": "string",
+          "description": "Prune failed deliveries older than this duration (e.g. 30d)"
+        }
+      ],
+      "args": [],
+      "options": {
+        "startApp": true
+      },
+      "filePath": "notifications_prune.js"
+    },
+    {
+      "commandName": "notifications:retry-failed",
+      "description": "Retry failed notification delivery attempts",
+      "help": "",
+      "namespace": "notifications",
+      "aliases": [],
+      "flags": [
+        {
+          "name": "channel",
+          "flagName": "channel",
+          "required": false,
+          "type": "string",
+          "description": "Only retry deliveries for this channel (e.g. mail)"
+        },
+        {
+          "name": "limit",
+          "flagName": "limit",
+          "required": false,
+          "type": "number",
+          "description": "Maximum number of failed deliveries to retry"
+        }
+      ],
+      "args": [],
+      "options": {
+        "startApp": true
+      },
+      "filePath": "notifications_retry_failed.js"
+    }
+  ],
+  "version": 1
+}

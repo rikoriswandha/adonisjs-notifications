@@ -16,7 +16,8 @@ The configure command will:
 
 ## Manual setup
 
-Add to adonisrc.ts:
+Add to `adonisrc.ts`:
+
 ```ts
 export default defineConfig({
   providers: [
@@ -28,7 +29,9 @@ export default defineConfig({
 })
 ```
 
-Copy the config stub manually from stubs/config/notifications.stub.
+The `@rikology/adonisjs-notifications/commands` export provides an AdonisJS v7-compatible command loader (`getMetaData` / `getCommand`). Register it exactly as shown above.
+
+Copy the config stub manually from `stubs/config/notifications.stub`.
 
 ## Requirements
 

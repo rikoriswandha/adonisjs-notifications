@@ -61,7 +61,8 @@
   },
   "scripts": {
     "copy:templates": "copyfiles \"stubs/**/*.stub\" build",
-    "typecheck": "tsc --noEmit",
+    "copy:commands": "copyfiles \"commands/commands.json\" build",
+    "generate:commands": "node --import=@poppinss/ts-exec scripts/generate_commands_manifest.ts",
     "lint": "eslint .",
     "format": "prettier --write .",
     "quick:test": "node --import=@poppinss/ts-exec --enable-source-maps bin/test.ts",
@@ -69,7 +70,7 @@
     "test": "c8 npm run quick:test",
     "precompile": "npm run lint",
     "compile": "tsdown && tsc --emitDeclarationOnly --declaration",
-    "postcompile": "npm run copy:templates",
+    "postcompile": "npm run generate:commands && npm run copy:commands && npm run copy:templates",
     "build": "npm run compile",
     "release": "release-it",
     "version": "npm run build",
@@ -156,6 +157,7 @@
       "./src/testing/main.ts",
       "./commands/main.ts",
       "./commands/make_notification.ts",
+      "./commands/notifications_prune.ts",
       "./commands/notifications_retry_failed.ts",
       "./src/ui/**/index.ts"
     ],
