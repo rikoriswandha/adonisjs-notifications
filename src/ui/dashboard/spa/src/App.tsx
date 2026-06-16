@@ -152,6 +152,7 @@ function NavLink({
 }: {
   active: boolean
   onClick: () => void
+  children: ReactNode
   colors: ThemeColors
 }): JSX.Element {
   return (
