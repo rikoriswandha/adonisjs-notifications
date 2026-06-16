@@ -28,12 +28,11 @@ router
   .use(middleware.auth())
 
 ## Routes
-
 | Route | Description |
 |---|---|
-| `GET /` | HTML dashboard page with summary cards and tables |
-| `GET /metrics.json` | JSON endpoint returning `NotificationMetrics` |
-| `GET /inbox/:notifiableType/:notifiableId` | Dashboard scoped to a single notifiable's inbox |
+| `GET /` | React dashboard SPA (development only by default) |
+| `GET /api/metrics` | JSON endpoint returning `NotificationMetrics` |
+| `GET /api/inbox/:notifiableType/:notifiableId` | Paginated inbox for a single notifiable |
 
 ## JSON endpoint
 
@@ -128,4 +127,6 @@ When no repository is configured, `getMetrics()` returns a zero-value structure 
 
 ## Custom styling
 
-The HTML page uses Tailwind CSS via the Play CDN. The dashboard renders via a pure string function (`createDashboardHtml`) so the package does not need to register Edge view paths. Build your own UI using the JSON endpoint data when you need full control.
+The dashboard is a React single-page application built into `src/ui/dashboard/spa`. It ships with a warm, light-first design system: OKLCH color tokens, a single terracotta accent, custom SVG icons, and a dark mode toggle. You can reuse the JSON endpoints to build a completely custom admin panel if the bundled UI does not fit your app.
+
+Design tokens and decisions live in `PRODUCT.md` and `DESIGN.md` at the repository root.

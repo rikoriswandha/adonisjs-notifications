@@ -19,9 +19,13 @@ export interface AsyncState<T> {
   refresh: () => void
 }
 
-export function useAsync<T>(load: () => Promise<T>, deps: Array<unknown>): AsyncState<T> {
-  const [data, setData] = useState<T | undefined>(undefined)
-  const [loading, setLoading] = useState(true)
+export function useAsync<T>(
+  load: () => Promise<T>,
+  deps: Array<unknown>,
+  initialData?: T
+): AsyncState<T> {
+  const [data, setData] = useState<T | undefined>(initialData)
+  const [loading, setLoading] = useState(initialData === undefined)
   const [error, setError] = useState<string | undefined>(undefined)
   const loadRef = useRef(load)
   loadRef.current = load
@@ -31,6 +35,7 @@ export function useAsync<T>(load: () => Promise<T>, deps: Array<unknown>): Async
     setError(undefined)
     loadRef
       .current()
+      .then((result) => setData(result))
       .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
       .finally(() => setLoading(false))
   }, [])
@@ -54,4 +59,19 @@ export function useTheme(): { dark: boolean; toggle: () => void } {
   }, [dark])
 
   return { dark, toggle: () => setDark((v: boolean) => !v) }
+}
+
+export function useReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(() =>
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+  )
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const handler = (event: MediaQueryListEvent) => setReduced(event.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+
+  return reduced
 }

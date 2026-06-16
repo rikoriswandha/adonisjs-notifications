@@ -5,12 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Notification Dashboard</title>
     <style>
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      html {
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+      }
+
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        line-height: 1.5;
+      }
+
+      button:focus-visible,
+      a:focus-visible,
+      [role="button"]:focus-visible {
+        outline: none;
+        box-shadow:
+          0 0 0 2px var(--color-bg, Canvas),
+          0 0 0 4px var(--color-accent, currentColor);
+      }
+
+      input:focus-visible,
+      textarea:focus-visible,
+      select:focus-visible {
+        outline: 2px solid var(--color-accent, currentColor);
+        outline-offset: 2px;
+      }
+
+      button, input, textarea, select {
+        font: inherit;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
       }
     </style>
   </head>

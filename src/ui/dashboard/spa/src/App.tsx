@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { ReactNode, JSX } from 'react'
+import type { JSX, ReactNode } from 'react'
 import { getMetrics } from './api'
-import { useAsync, useTheme, useWindowFocus } from './hooks'
+import type { DashboardMetrics } from './api'
+import { Button } from './components'
+import { ActivityIcon, InboxIcon, MoonIcon, SunIcon } from './icons'
+import { useAsync, useReducedMotion, useTheme, useWindowFocus } from './hooks'
 import { InboxPage } from './InboxPage'
 import { MetricsPage } from './MetricsPage'
-import { cn, getThemeColors, radius, spacing } from './styles'
-import type { ThemeColors } from './styles'
+import { getThemeColors, radius, spacing, themeVariables, typography } from './styles'
 
 export interface RouteInfo {
   name: 'metrics' | 'inbox'
@@ -34,13 +36,23 @@ function hrefFor(route: RouteInfo): string {
   return `${basePath()}/`
 }
 
+function getInitialMetrics(): DashboardMetrics | undefined {
+  const initial = window.__DASHBOARD_INITIAL_DATA__
+  if (initial && typeof initial === 'object' && 'metrics' in initial) {
+    return initial.metrics as DashboardMetrics
+  }
+  return undefined
+}
+
 export function App(): JSX.Element {
   const { dark, toggle } = useTheme()
+  const reducedMotion = useReducedMotion()
   const colors = useMemo(() => getThemeColors(dark), [dark])
+  const variables = useMemo(() => themeVariables(dark), [dark])
   const [route, setRoute] = useState<RouteInfo>(() => parseRoute(window.location.pathname))
 
   const metricsLoad = useCallback(() => getMetrics(), [])
-  const metrics = useAsync(metricsLoad, [route.name])
+  const metrics = useAsync(metricsLoad, [route.name], getInitialMetrics())
 
   const navigate = useCallback((next: RouteInfo) => {
     const href = hrefFor(next)
@@ -61,6 +73,7 @@ export function App(): JSX.Element {
   return (
     <div
       style={{
+        ...variables,
         minHeight: '100vh',
         backgroundColor: colors.bg,
         color: colors.text,
@@ -68,77 +81,98 @@ export function App(): JSX.Element {
     >
       <header
         style={{
-          borderBottom: `1px solid ${colors.border}`,
-          backgroundColor: colors.surface,
-          padding: `${spacing.md} ${spacing.lg}`,
+          position: 'sticky',
+          top: 0,
+          zIndex: 10,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          gap: spacing.md,
+          height: '56px',
+          padding: `0 ${spacing.lg}`,
+          backgroundColor: colors.surface,
+          borderBottom: `1px solid ${colors.border}`,
+          boxShadow: dark
+            ? '0 1px 0 oklch(100% 0 0 / 0.06), 0 2px 6px oklch(0% 0 0 / 0.12)'
+            : '0 1px 0 oklch(0% 0 0 / 0.04), 0 2px 6px oklch(0% 0 0 / 0.03)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md }}>
-          <h1 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 600 }}>Notifications Dashboard</h1>
-          <nav style={{ display: 'flex', gap: spacing.sm }}>
-            <NavLink active={route.name === 'metrics'} onClick={() => navigate({ name: 'metrics' })} colors={colors}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm, color: colors.accent }}>
+            <ActivityIcon size={20} />
+            <span
+              style={{
+                fontSize: typography.size.base,
+                fontWeight: typography.weight.semibold,
+                letterSpacing: '-0.01em',
+              }}
+            >
+              Notifications
+            </span>
+          </div>
+          <nav style={{ display: 'flex', alignItems: 'center', gap: spacing.xs }}>
+            <NavLink
+              active={route.name === 'metrics'}
+              onClick={() => navigate({ name: 'metrics' })}
+              icon={<ActivityIcon size={16} />}
+            >
               Metrics
             </NavLink>
             {route.name === 'inbox' && route.notifiableType && route.notifiableId && (
-              <NavLink active={true} onClick={() => {}} colors={colors}>
+              <NavLink active icon={<InboxIcon size={16} />} onClick={() => {}}>
                 Inbox
               </NavLink>
             )}
           </nav>
         </div>
-        <button
-          onClick={toggle}
-          style={{
-            border: `1px solid ${colors.border}`,
-            backgroundColor: colors.surface2,
-            color: colors.text,
-            borderRadius: radius.md,
-            padding: `${spacing.sm} ${spacing.md}`,
-            cursor: 'pointer',
-          }}
-        >
-          {dark ? 'Light' : 'Dark'}
-        </button>
+
+        <Button variant="ghost" onClick={toggle} title={dark ? 'Switch to light mode' : 'Switch to dark mode'}>
+          {dark ? <SunIcon size={16} /> : <MoonIcon size={16} />}
+          <span style={{ marginLeft: spacing.xs }}>{dark ? 'Light' : 'Dark'}</span>
+        </Button>
       </header>
 
-      <main style={{ padding: spacing.lg, maxWidth: 1200, margin: '0 auto' }}>
-        {metrics.error && (
-          <div
-            style={{
-              padding: spacing.md,
-              backgroundColor: colors.danger + '20',
-              color: colors.danger,
-              borderRadius: radius.md,
-              marginBottom: spacing.md,
-            }}
-          >
-            {metrics.error}
-          </div>
-        )}
+      <main style={{ padding: `${spacing.xl} ${spacing.lg}` }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          {metrics.error && (
+            <div
+              style={{
+                padding: `${spacing.md} ${spacing.lg}`,
+                marginBottom: spacing.lg,
+                borderRadius: radius.md,
+                backgroundColor: colors.dangerBg,
+                color: colors.danger,
+                fontSize: typography.size.sm,
+              }}
+              role="alert"
+            >
+              {metrics.error}
+            </div>
+          )}
 
-        {route.name === 'metrics' && (
-          <MetricsPage
-            metrics={metrics.data}
-            loading={metrics.loading}
-            colors={colors}
-            onViewInbox={(type: string, id: string) =>
-              navigate({ name: 'inbox', notifiableType: type, notifiableId: id })
-            }
-          />
-        )}
+          {route.name === 'metrics' && (
+            <MetricsPage
+              metrics={metrics.data}
+              loading={metrics.loading}
+              colors={colors}
+              reducedMotion={reducedMotion}
+              onViewInbox={(type: string, id: string) =>
+                navigate({ name: 'inbox', notifiableType: type, notifiableId: id })
+              }
+            />
+          )}
 
-        {route.name === 'inbox' && route.notifiableType && route.notifiableId && (
-          <InboxPage
-            notifiableType={route.notifiableType}
-            notifiableId={route.notifiableId}
-            metrics={metrics.data}
-            colors={colors}
-            onBack={() => navigate({ name: 'metrics' })}
-          />
-        )}
+          {route.name === 'inbox' && route.notifiableType && route.notifiableId && (
+            <InboxPage
+              notifiableType={route.notifiableType}
+              notifiableId={route.notifiableId}
+              metrics={metrics.data}
+              colors={colors}
+              reducedMotion={reducedMotion}
+              onBack={() => navigate({ name: 'metrics' })}
+            />
+          )}
+        </div>
       </main>
     </div>
   )
@@ -148,26 +182,38 @@ function NavLink({
   active,
   onClick,
   children,
-  colors,
+  icon,
 }: {
   active: boolean
   onClick: () => void
   children: ReactNode
-  colors: ThemeColors
+  icon: ReactNode
 }): JSX.Element {
   return (
     <button
       onClick={onClick}
-      className={cn('nav-link', active && 'active')}
       style={{
-        border: 'none',
-        background: 'transparent',
-        color: active ? colors.accent : colors.muted,
-        fontWeight: active ? 600 : 400,
-        cursor: 'pointer',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: spacing.xs,
         padding: `${spacing.sm} ${spacing.md}`,
+        border: 'none',
+        borderRadius: radius.md,
+        backgroundColor: active ? 'var(--color-accent-bg)' : 'transparent',
+        color: active ? 'var(--color-accent)' : 'var(--color-muted)',
+        fontSize: typography.size.sm,
+        fontWeight: active ? typography.weight.semibold : typography.weight.medium,
+        cursor: 'pointer',
+        transition: `background-color 150ms cubic-bezier(0.25, 1, 0.5, 1), color 150ms cubic-bezier(0.25, 1, 0.5, 1)`,
+      }}
+      onMouseEnter={(e) => {
+        if (!active) e.currentTarget.style.backgroundColor = 'var(--color-surface-2)'
+      }}
+      onMouseLeave={(e) => {
+        if (!active) e.currentTarget.style.backgroundColor = 'transparent'
       }}
     >
+      {icon}
       {children}
     </button>
   )
