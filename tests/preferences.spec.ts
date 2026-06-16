@@ -201,7 +201,10 @@ test.group('Preferences - Partial resolver output', () => {
     const config = createConfig({ mail: () => mailChannel }, { resolver })
     const manager = new NotificationManager(config)
 
-    await manager.send({ id: 1, email: 'user@example.com' }, new CategorizedNotification('transactional'))
+    await manager.send(
+      { id: 1, email: 'user@example.com' },
+      new CategorizedNotification('transactional')
+    )
 
     assert.lengthOf(mailChannel.calls, 1)
   })
@@ -220,7 +223,7 @@ test.group('Preferences - Partial resolver output', () => {
     )
     const manager = new NotificationManager(config)
 
-    const { mockNow, restore } = mockDateTo('2026-01-15T12:00:00Z')
+    const { restore } = mockDateTo('2026-01-15T12:00:00Z')
     await manager.send({ id: 1, email: 'user@example.com', phone: '+123' }, new TestNotification())
     restore()
 

@@ -1,14 +1,15 @@
 import router from '@adonisjs/core/services/router'
 import app from '@adonisjs/core/services/app'
 import {
-  handleDashboardIndex,
-  handleInboxPage,
-  handleInboxList,
-  handleMarkAsRead,
-  handleMarkAsUnread,
-  handleMarkAllAsRead,
-  handleDeleteNotification,
-} from './handlers.ts'
+  apiCsrfHandler,
+  apiDeleteNotificationHandler,
+  apiInboxHandler,
+  apiMarkAllAsReadHandler,
+  apiMarkAsReadHandler,
+  apiMarkAsUnreadHandler,
+  apiMetricsHandler,
+  serveDashboardShell,
+} from './route_handlers.ts'
 
 /**
  * Register notification dashboard routes.
@@ -18,54 +19,55 @@ import {
  */
 export function notificationDashboardRoutes() {
   return router.group(() => {
-    // JSON metrics endpoint with short-lived cache
-    router.get('metrics.json', async ({ response }) => {
+    // JSON API: metrics snapshot
+    router.get('api/metrics', async (ctx) => {
       const notifications = await app.container.make('notification.manager')
-      const metrics = await notifications.getMetrics({ filter: {} })
-      response.header('Cache-Control', 'public, max-age=5')
-      return response.json(metrics)
+      return apiMetricsHandler(ctx, notifications)
     })
 
-    // HTML dashboard endpoint
-    router.get('/', async (ctx) => {
+    // JSON API: paginated inbox
+    router.get('api/inbox/:notifiableType/:notifiableId', async (ctx) => {
       const notifications = await app.container.make('notification.manager')
-      return handleDashboardIndex(ctx, notifications)
+      return apiInboxHandler(ctx, notifications, ctx.params.notifiableType, ctx.params.notifiableId)
     })
 
-    // Per-notifiable inbox view
-    router.get('inbox/:notifiableType/:notifiableId', async (ctx) => {
+    // JSON API: CSRF token
+    router.get('api/csrf', async (ctx) => apiCsrfHandler(ctx))
+
+    // JSON API: mark as read
+    router.patch('api/notifications/:id/read', async (ctx) => {
       const notifications = await app.container.make('notification.manager')
-      return handleInboxPage(ctx, notifications, ctx.params.notifiableType, ctx.params.notifiableId)
+      return apiMarkAsReadHandler(ctx, notifications, ctx.params.id)
     })
 
-    // HTMX partial: notification list for inbox
-    router.get('inbox/:notifiableType/:notifiableId/list', async (ctx) => {
+    // JSON API: mark as unread
+    router.patch('api/notifications/:id/unread', async (ctx) => {
       const notifications = await app.container.make('notification.manager')
-      return handleInboxList(ctx, notifications, ctx.params.notifiableType, ctx.params.notifiableId)
+      return apiMarkAsUnreadHandler(ctx, notifications, ctx.params.id)
     })
 
-    // Mark single notification as read
-    router.patch('notifications/:id/read', async (ctx) => {
+    // JSON API: mark all as read
+    router.patch('api/notifications/mark-all-read', async (ctx) => {
       const notifications = await app.container.make('notification.manager')
-      return handleMarkAsRead(ctx, notifications, ctx.params.id)
+      return apiMarkAllAsReadHandler(ctx, notifications)
     })
 
-    // Mark single notification as unread
-    router.patch('notifications/:id/unread', async (ctx) => {
+    // JSON API: delete notification
+    router.delete('api/notifications/:id', async (ctx) => {
       const notifications = await app.container.make('notification.manager')
-      return handleMarkAsUnread(ctx, notifications, ctx.params.id)
+      return apiDeleteNotificationHandler(ctx, notifications, ctx.params.id)
     })
 
-    // Mark all notifications as read for a notifiable
-    router.patch('notifications/mark-all-read', async (ctx) => {
-      const notifications = await app.container.make('notification.manager')
-      return handleMarkAllAsRead(ctx, notifications)
-    })
-
-    // Delete a single notification
-    router.delete('notifications/:id', async (ctx) => {
-      const notifications = await app.container.make('notification.manager')
-      return handleDeleteNotification(ctx, notifications, ctx.params.id)
-    })
+    // SPA shell (development only by default)
+    if (!app.inProduction) {
+      router.get('/', async (ctx) => {
+        const notifications = await app.container.make('notification.manager')
+        return serveDashboardShell(ctx, notifications)
+      })
+      router.get('(.*)', async (ctx) => {
+        const notifications = await app.container.make('notification.manager')
+        return serveDashboardShell(ctx, notifications)
+      })
+    }
   })
 }

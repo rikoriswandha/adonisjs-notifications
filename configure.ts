@@ -157,6 +157,7 @@ export async function configure(command: Configure) {
     command.logger.log('      notificationDashboardRoutes()')
     command.logger.log('    }).prefix("/notifications/dashboard")')
     command.logger.log('')
+    command.logger.log('    The dashboard mounts as a React SPA by default.')
   }
 
   if (!lucidInstalled) {

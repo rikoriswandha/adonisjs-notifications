@@ -9,3 +9,5 @@ dist
 package-lock.json
 
 codedb.snapshot
+!src/ui/dashboard/spa/dist
+!src/ui/dashboard/spa/dist/index.html

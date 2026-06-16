@@ -1,3 +1,3 @@
 import { configPkg } from '@adonisjs/eslint-config'
 
-export default configPkg()
+export default [{ ignores: ['src/ui/dashboard/spa/**'] }, ...configPkg()]

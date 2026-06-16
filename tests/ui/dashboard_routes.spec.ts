@@ -11,7 +11,17 @@ import {
   handleMarkAsUnread,
   handleMarkAllAsRead,
   handleDeleteNotification,
-} from '../../src/ui/dashboard/handlers.ts'
+} from '../../src/ui/dashboard/html_handlers.ts'
+import {
+  apiMetricsHandler,
+  apiInboxHandler,
+  apiCsrfHandler,
+  apiMarkAsReadHandler,
+  apiMarkAsUnreadHandler,
+  apiMarkAllAsReadHandler,
+  apiDeleteNotificationHandler,
+  serveDashboardShell,
+} from '../../src/ui/dashboard/route_handlers.ts'
 import type { NotificationConfig } from '../../src/contracts/config.ts'
 
 function createConfig(): NotificationConfig {
@@ -53,9 +63,26 @@ function createMockContext(url: string, headers?: Record<string, string>) {
   const ctx = new HttpContextFactory().merge({ request }).create()
   return ctx
 }
+
+function createMockContextWithBody(
+  url: string,
+  body: Record<string, unknown>,
+  headers?: Record<string, string>
+) {
+  const request = createMockRequest(url, headers)
+  const ctx = new HttpContextFactory().merge({ request }).create()
+  ;(ctx.request as unknown as { all(): Record<string, unknown> }).all = () => body
+  return ctx
+}
+
 function getResponseBody(ctx: HttpContext): string {
   const content = ctx.response.lazyBody?.content as [string, boolean] | undefined
   return content?.[0] ?? ''
+}
+
+function getResponseJson(ctx: HttpContext): unknown {
+  const content = ctx.response.lazyBody?.content as [unknown, boolean] | undefined
+  return content?.[0]
 }
 
 test.group('Dashboard Routes - GET /', () => {
@@ -230,9 +257,7 @@ test.group('Dashboard Routes - PATCH /notifications/mark-all-read', () => {
     await repo.store({ type: 'B', notifiableType: 'User', notifiableId: '1', data: {} })
     const manager = createManager(repo)
 
-    const req = createMockRequest('/notifications/mark-all-read')
-    const ctx = new HttpContextFactory().merge({ request: req }).create()
-    ;(ctx.request as unknown as { all(): Record<string, unknown> }).all = () => ({
+    const ctx = createMockContextWithBody('/notifications/mark-all-read', {
       notifiableType: 'User',
       notifiableId: '1',
     })
@@ -289,5 +314,150 @@ test.group('Dashboard Routes - DELETE /notifications/:id', () => {
     await handleDeleteNotification(ctx, manager, n.id)
 
     assert.equal(ctx.response.response.statusCode, 302)
+  })
+})
+
+test.group('Dashboard API Routes', () => {
+  test('GET /api/metrics returns JSON with cache header', async ({ assert }) => {
+    const repo = new MemoryNotificationRepository()
+    const manager = createManager(repo)
+    const ctx = createMockContext('/api/metrics')
+
+    await apiMetricsHandler(ctx, manager)
+
+    assert.equal(ctx.response.response.statusCode, 200)
+    assert.equal(ctx.response.getHeader('Content-Type'), 'application/json; charset=utf-8')
+    assert.equal(ctx.response.getHeader('Cache-Control'), 'no-store')
+    const body = getResponseJson(ctx) as { deliveries: unknown; inbox: unknown; computedAt: string }
+    assert.properties(body, ['deliveries', 'inbox', 'computedAt'])
+  })
+
+  test('GET /api/inbox/:type/:id returns JSON inbox', async ({ assert }) => {
+    const repo = new MemoryNotificationRepository()
+    await repo.store({ type: 'A', notifiableType: 'User', notifiableId: '1', data: {} })
+    const manager = createManager(repo)
+    const ctx = createMockContext('/api/inbox/User/1')
+
+    await apiInboxHandler(ctx, manager, 'User', '1')
+
+    assert.equal(ctx.response.response.statusCode, 200)
+    const body = getResponseJson(ctx) as {
+      notifications: unknown[]
+      total: number
+      unreadCount: number
+    }
+    assert.equal(body.total, 1)
+    assert.equal(body.unreadCount, 1)
+    assert.lengthOf(body.notifications, 1)
+  })
+
+  test('GET /api/csrf returns token', async ({ assert }) => {
+    const ctx = createMockContext('/api/csrf')
+    ;(ctx.request as unknown as { csrfToken(): string }).csrfToken = () => 'token123'
+
+    await apiCsrfHandler(ctx)
+
+    assert.equal(ctx.response.response.statusCode, 200)
+    const body = getResponseJson(ctx) as { csrfToken: string }
+    assert.equal(body.csrfToken, 'token123')
+  })
+
+  test('PATCH /api/notifications/:id/read returns updated row', async ({ assert }) => {
+    const repo = new MemoryNotificationRepository()
+    const n = await repo.store({ type: 'A', notifiableType: 'User', notifiableId: '1', data: {} })
+    const manager = createManager(repo)
+    const ctx = createMockContext(`/api/notifications/${n.id}/read`)
+
+    await apiMarkAsReadHandler(ctx, manager, n.id)
+
+    assert.equal(ctx.response.response.statusCode, 200)
+    const body = getResponseJson(ctx) as { readAt: string | null }
+    assert.isNotNull(body.readAt)
+  })
+
+  test('PATCH /api/notifications/:id/unread returns updated row', async ({ assert }) => {
+    const repo = new MemoryNotificationRepository()
+    const n = await repo.store({ type: 'A', notifiableType: 'User', notifiableId: '1', data: {} })
+    await repo.markAsRead(n.id)
+    const manager = createManager(repo)
+    const ctx = createMockContext(`/api/notifications/${n.id}/unread`)
+
+    await apiMarkAsUnreadHandler(ctx, manager, n.id)
+
+    const body = getResponseJson(ctx) as { readAt: string | null }
+    assert.isNull(body.readAt)
+  })
+
+  test('PATCH /api/notifications/mark-all-read returns ok', async ({ assert }) => {
+    const repo = new MemoryNotificationRepository()
+    await repo.store({ type: 'A', notifiableType: 'User', notifiableId: '1', data: {} })
+    const manager = createManager(repo)
+    const ctx = createMockContextWithBody('/api/notifications/mark-all-read', {
+      notifiableType: 'User',
+      notifiableId: '1',
+    })
+
+    await apiMarkAllAsReadHandler(ctx, manager)
+
+    assert.equal(ctx.response.response.statusCode, 200)
+    assert.deepEqual(getResponseJson(ctx), { ok: true })
+  })
+
+  test('DELETE /api/notifications/:id returns ok', async ({ assert }) => {
+    const repo = new MemoryNotificationRepository()
+    const n = await repo.store({ type: 'A', notifiableType: 'User', notifiableId: '1', data: {} })
+    const manager = createManager(repo)
+    const ctx = createMockContext(`/api/notifications/${n.id}`)
+
+    await apiDeleteNotificationHandler(ctx, manager, n.id)
+
+    assert.equal(ctx.response.response.statusCode, 200)
+    assert.deepEqual(getResponseJson(ctx), { ok: true })
+    assert.isNull(await repo.findById(n.id))
+  })
+})
+
+test.group('Dashboard SPA shell', () => {
+  test('serveDashboardShell returns HTML with injected base path and initial data', async ({
+    assert,
+  }) => {
+    const repo = new MemoryNotificationRepository()
+    await repo.store({ type: 'A', notifiableType: 'User', notifiableId: '1', data: {} })
+    const manager = createManager(repo)
+    const ctx = createMockContext('/notifications/dashboard/inbox/User/1')
+    ;(ctx.request as unknown as { csrfToken(): string }).csrfToken = () => 'token123'
+
+    await serveDashboardShell(ctx, manager)
+
+    const body = getResponseBody(ctx)
+    assert.include(body, '<div id="root">')
+    assert.include(body, '__DASHBOARD_BASE_PATH__')
+    assert.include(body, '"/notifications/dashboard"')
+    assert.include(body, '__DASHBOARD_INITIAL_DATA__')
+    assert.include(body, '"inbox"')
+    assert.include(body, '<meta name="csrf-token" content="token123">')
+    assert.equal(ctx.response.getHeader('Content-Type'), 'text/html; charset=utf-8')
+    assert.equal(ctx.response.getHeader('Cache-Control'), 'no-store')
+  })
+  test('serveDashboardShell derives base path from the mount prefix alone', async ({ assert }) => {
+    const repo = new MemoryNotificationRepository()
+    const manager = createManager(repo)
+    const ctx = createMockContext('/notifications/dashboard')
+
+    await serveDashboardShell(ctx, manager)
+
+    const body = getResponseBody(ctx)
+    assert.include(body, '"/notifications/dashboard"')
+  })
+
+  test('serveDashboardShell strips query string when deriving base path', async ({ assert }) => {
+    const repo = new MemoryNotificationRepository()
+    const manager = createManager(repo)
+    const ctx = createMockContext('/notifications/dashboard?foo=bar')
+
+    await serveDashboardShell(ctx, manager)
+
+    const body = getResponseBody(ctx)
+    assert.include(body, '"/notifications/dashboard"')
   })
 })

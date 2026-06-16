@@ -10,6 +10,7 @@
   "types": "./build/index.d.ts",
   "files": [
     "build",
+    "src/ui/dashboard/spa/dist/index.html",
     "!build/bin",
     "!build/tests"
   ],
@@ -62,7 +63,9 @@
   "scripts": {
     "copy:templates": "copyfiles \"stubs/**/*.stub\" build",
     "copy:commands": "copyfiles \"commands/commands.json\" build",
+    "copy:ui": "copyfiles -u 5 \"src/ui/dashboard/spa/dist/index.html\" \"build/src/ui/dashboard/spa/dist/\"",
     "generate:commands": "node --import=@poppinss/ts-exec scripts/generate_commands_manifest.ts",
+    "build:ui": "cd src/ui/dashboard/spa && npm install && npm run build",
     "lint": "eslint .",
     "format": "prettier --write .",
     "quick:test": "node --import=@poppinss/ts-exec --enable-source-maps bin/test.ts",
@@ -70,7 +73,7 @@
     "test": "c8 npm run quick:test",
     "precompile": "npm run lint",
     "compile": "tsdown && tsc --emitDeclarationOnly --declaration",
-    "postcompile": "npm run generate:commands && npm run copy:commands && npm run copy:templates",
+    "postcompile": "npm run generate:commands && npm run copy:commands && npm run copy:templates && npm run copy:ui",
     "build": "npm run compile",
     "release": "release-it",
     "version": "npm run build",
@@ -157,9 +160,9 @@
       "./src/testing/main.ts",
       "./commands/main.ts",
       "./commands/make_notification.ts",
+      "./src/ui/dashboard/index.ts",
       "./commands/notifications_prune.ts",
-      "./commands/notifications_retry_failed.ts",
-      "./src/ui/**/index.ts"
+      "./commands/notifications_retry_failed.ts"
     ],
     "outDir": "./build",
     "clean": true,
