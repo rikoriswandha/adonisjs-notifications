@@ -48,8 +48,8 @@ When upgrading between minor versions:
 |---|---|---|
 |@adonisjs/core|7.0.0|—|
 |@adonisjs/lucid|22.0.0|—|
-|@adonisjs/mail|4.0.0|—|
-|@adonisjs/queue|1.0.0|—|
+|@adonisjs/mail|10.0.0|—|
+|@adonisjs/queue|0.6.2|—|
 
 ## Future Plans (Post-1.0)
 
