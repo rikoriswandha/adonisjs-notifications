@@ -26,6 +26,34 @@ router
   })
   .prefix('/admin/notifications')
   .use(middleware.auth())
+```
+
+## Production authorization
+
+Dashboard API routes are disabled in production unless you provide an `authorize` callback. The
+callback runs before the notification manager is resolved and receives the exact resource targeted
+by the request.
+
+```ts
+router
+  .group(() => {
+    notificationDashboardRoutes({
+      authorize: async (ctx, resource) => {
+        await ctx.auth.authenticate()
+
+        // Keep the administrative dashboard admin-only. `resource` also contains
+        // notifiableType/notifiableId or notificationId for finer-grained policies.
+        return ctx.auth.user?.isAdmin === true
+      },
+    })
+  })
+  .prefix('/admin/notifications')
+  .use(middleware.auth())
+```
+
+Returning `false` sends a `403 Forbidden` response. Throwing from the callback preserves your
+application's normal authentication or authorization error handling. A middleware wrapper is still
+recommended as defense in depth, but does not replace the callback in production.
 
 ## Routes
 | Route | Description |

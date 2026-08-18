@@ -33,7 +33,6 @@ export async function configure(command: Configure) {
   }
 
   try {
-    // @ts-expect-error Optional peer dependency
     await import('@adonisjs/mail')
     mailInstalled = true
   } catch {

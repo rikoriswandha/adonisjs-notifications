@@ -46,3 +46,24 @@ jobs:
         run: npm install
       - name: Run tests
         run: npm test
+
+  peer-compatibility:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install and build package
+        run: |
+          npm install
+          npm run build
+      - name: Pack package
+        run: npm pack
+      - name: Verify supported optional peers in a consumer project
+        run: |
+          mkdir ../consumer
+          cd ../consumer
+          npm init --yes
+          npm install ../adonisjs-notifications/rikology-adonisjs-notifications-*.tgz @adonisjs/core@^7.0.0 @adonisjs/mail@^10.0.0 @adonisjs/queue@^0.6.2
+          npm ls @rikology/adonisjs-notifications @adonisjs/core @adonisjs/mail @adonisjs/queue

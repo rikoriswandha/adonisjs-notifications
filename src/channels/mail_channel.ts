@@ -99,7 +99,6 @@ export class MailChannel implements NotificationChannel<MailMessageOptions, Mail
       const mailer = messageOptions.mailer ? mail.use(messageOptions.mailer) : mail.use()
 
       // Send using callback approach
-      // Send using callback approach
       const response = await mailer.send((message: MessageContract) => {
         this.applyToMessage(message, messageOptions, context)
       })

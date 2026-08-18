@@ -67,6 +67,7 @@
     "generate:commands": "node --import=@poppinss/ts-exec scripts/generate_commands_manifest.ts",
     "build:ui": "cd src/ui/dashboard/spa && npm install && npm run build",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "quick:test": "node --import=@poppinss/ts-exec --enable-source-maps bin/test.ts",
     "pretest": "npm run lint",
@@ -99,7 +100,7 @@
     "@adonisjs/core": "^7.0.1",
     "@adonisjs/eslint-config": "^3.0.0",
     "@adonisjs/lucid": "^22.4.2",
-    "@adonisjs/mail": "^4.0.0",
+    "@adonisjs/mail": "^10.0.0",
     "@adonisjs/prettier-config": "^1.4.5",
     "@adonisjs/tsconfig": "^2.0.0",
     "@japa/api-client": "^3.2.1",
@@ -123,8 +124,8 @@
     "@adonisjs/assembler": "^8.0.0",
     "@adonisjs/core": "^7.0.0",
     "@adonisjs/lucid": "^22.0.0",
-    "@adonisjs/mail": "^4.0.0",
-    "@adonisjs/queue": "^1.0.0"
+    "@adonisjs/mail": "^10.0.0",
+    "@adonisjs/queue": "^0.6.2"
   },
   "peerDependenciesMeta": {
     "@adonisjs/assembler": {

@@ -73,8 +73,7 @@ function getNotificationClass(className: string): new () => Notification {
   // In a real app, classes would be registered at boot time.
   // We use a map populated by imports in the provider/initializer.
   const registry = (globalThis as any).__adonisjs_notification_registry as
-    | Record<string, new () => Notification>
-    | undefined
+    Record<string, new () => Notification> | undefined
 
   if (registry && registry[className]) {
     return registry[className]
