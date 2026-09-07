@@ -17,7 +17,7 @@ interface JobOptions {
   maxRetries?: number
 }
 
-interface JobDispatcher {
+interface JobDispatcher extends PromiseLike<void> {
   toQueue(name: string): JobDispatcher
   in(delayMs: number): JobDispatcher
   with(connection: string): JobDispatcher
@@ -85,12 +85,12 @@ class JobBuilder implements JobDispatcher {
     return this
   }
 
-  async then(
-    _onfulfilled?: ((value: unknown) => unknown | PromiseLike<unknown>) | null,
-    _onrejected?: ((reason: unknown) => unknown | PromiseLike<unknown>) | null
-  ): Promise<unknown> {
+  then<TResult1 = void, TResult2 = never>(
+    onfulfilled?: ((value: void) => TResult1 | PromiseLike<TResult1>) | null,
+    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+  ): Promise<TResult1 | TResult2> {
     const job = new SendNotificationJob(this.payload)
-    return job.execute()
+    return job.execute().then(onfulfilled, onrejected)
   }
 }
 
